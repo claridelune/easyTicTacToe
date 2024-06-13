@@ -38,6 +38,23 @@ std::vector<int> DataHandler::load_labels(const std::string& file_path) {
     return labels;
 }
 
+
+void DataHandler::format_training_data(const std::string &data, std::vector<std::vector<double>> &train_data, std::vector<int> &train_labels) {
+  /*Lo implemento despues xd*/
+}
+
+std::string DataHandler::vector_to_binary_string(const std::vector<std::vector<double>>& w1, const std::vector<std::vector<double>>& w2) {
+  /*Lo implemento despues xd*/
+}
+
+void DataHandler::binaryStringToVector(std::string weights, std::vector<std::vector<double>>& w1, std::vector<std::vector<double>>& w2) {
+  /*Lo implemento despues xd*/
+}
+
+std::vector<double> DataHandler::getBoard(std::string board) {
+  /*Lo implemento despues xd*/
+}
+
 void DataHandler::normalize_data(std::vector<std::vector<double>>& data) {
     for (size_t j = 0; j < data[0].size(); ++j) {
         std::vector<double> column;

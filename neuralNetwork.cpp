@@ -127,6 +127,18 @@ void NeuralNetwork::train(std::vector < std::vector < double >> data_train,
   }
 }
 
+void NeuralNetwork::run(std::vector < std::vector < double >> data_train,
+  std::vector < int > labels_train) {
+  for (size_t i = 0; i < data_train.size(); ++i) {
+    std::vector < double > y(n_outputs, 0.0);
+    y[labels_train[i]] = 1.0;
+
+    std::vector < double > z1, a1, z2, a2;
+    forward(data_train[i], z1, a1, z2, a2);
+    backpropagate(data_train[i], y, z1, a1, z2, a2);
+  }
+}
+
 int NeuralNetwork::predict(const std::vector < double > & x) {
   std::vector < double > z1, a1, z2, a2;
   forward(x, z1, a1, z2, a2);

@@ -16,12 +16,16 @@ public:
                 double _learning_rate);
   void train(std::vector<std::vector<double>> data_train,
              std::vector<int> labels_train);
+  void run(std::vector<std::vector<double>> data_train,
+             std::vector<int> labels_train);
   void forward(const std::vector<double> &x, std::vector<double> &z1,
                std::vector<double> &a1, std::vector<double> &z2,
                std::vector<double> &a2);
   int predict(const std::vector<double> &x);
 
   std::mt19937 gen;
+  std::vector<std::vector<double>> W1;
+  std::vector<std::vector<double>> W2;
 
 private:
   unsigned int n_epochs;
@@ -30,9 +34,7 @@ private:
   unsigned int n_outputs;
   double learning_rate;
 
-  std::vector<std::vector<double>> W1;
   std::vector<double> b1;
-  std::vector<std::vector<double>> W2;
   std::vector<double> b2;
 
   void he_initialization(std::vector<std::vector<double>> &W);
