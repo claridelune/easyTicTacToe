@@ -1,5 +1,0 @@
-/home/dev/projects/claridelune/easyTicTacToe/build/CMakeFiles/edit_cache.dir
-/home/dev/projects/claridelune/easyTicTacToe/build/CMakeFiles/rebuild_cache.dir
-/home/dev/projects/claridelune/easyTicTacToe/build/server_main/CMakeFiles/serverMain.dir
-/home/dev/projects/claridelune/easyTicTacToe/build/server_main/CMakeFiles/edit_cache.dir
-/home/dev/projects/claridelune/easyTicTacToe/build/server_main/CMakeFiles/rebuild_cache.dir

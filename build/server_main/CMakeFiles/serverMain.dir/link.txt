@@ -1,1 +1,0 @@
-clang++ CMakeFiles/serverMain.dir/main.cpp.o CMakeFiles/serverMain.dir/logger.cpp.o CMakeFiles/serverMain.dir/server.cpp.o -o serverMain 
