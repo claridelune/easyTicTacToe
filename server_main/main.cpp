@@ -1,16 +1,16 @@
-#include "server.hpp"
+#include "manager.hpp"
 #include "logger.hpp"
 
-#define PORT 4000
+#define PORT 4001
 
 Logger logger("main");
 
 int main() {
-    Server* server = new Server();
-    server->listen(PORT, []() {
+    ServerManager* manager = new ServerManager();
+    manager->run(PORT, []() {
         logger.info("Server is running...");
     });
 
-    delete server;
+    delete manager;
     return 0;
 }

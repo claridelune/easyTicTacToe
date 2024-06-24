@@ -1,22 +1,15 @@
 #ifndef SERVER_MAIN_SERVER_H
 #define SERVER_MAIN_SERVER_H
 
-#include <functional>
+#include <string>
 
 class Server {
-    private:
-        // struct sockaddr_in _
-        void loop();
-
     public:
-        Server();
-        ~Server();
-        
-        void listen(size_t port, std::function<void()> handler);
+        virtual ~Server() {}
+        virtual std::string emit() = 0;
+        virtual void subscribe(std::string data) = 0;
 
-        void start();
-        void next();
-        void close();
+        virtual void broadcast(std::string payload) = 0;
 };
 
 #endif

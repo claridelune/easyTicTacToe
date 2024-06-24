@@ -4,6 +4,9 @@ project(easyTicTacToe)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_COMPILER clang++)
+# set(CMAKE_CXX_COMPILER clang++)
 
+add_subdirectory(lib/json)
+add_subdirectory(shared)
 add_subdirectory(server_main)
+add_subdirectory(server_trainer)
