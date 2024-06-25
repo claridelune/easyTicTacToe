@@ -1,2 +1,7 @@
 build
 lib/**/*
+
+Makefile
+build/
+*.vscode/
+*.out

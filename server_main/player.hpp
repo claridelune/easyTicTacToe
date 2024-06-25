@@ -6,10 +6,9 @@
 
 class PlayerServer : public Server { 
     public:
-        std::string emit() override;
-        void subscribe(std::string data) override;
+        PlayerServer() { initialize(); }
 
-        void broadcast(std::string payload) override;
+        void configure() override;
 };
 
 #endif

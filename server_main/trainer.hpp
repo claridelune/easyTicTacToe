@@ -3,13 +3,26 @@
 
 #include "server.hpp"
 #include "trainer.hpp"
+#include "config.hpp"
 
 class TrainerServer : public Server { 
-    public:
-        std::string emit() override;
-        void subscribe(std::string data) override;
+    private:
+        Config* _config;
 
-        void broadcast(std::string payload) override;
+    public:
+        TrainerServer() { 
+            initialize();
+            _config = new Config();
+        }
+
+        ~TrainerServer() {
+            delete _config;
+        }
+
+        void configure() override;
+
+        Response join(Request request);
+        Response load(Request request);
 };
 
 #endif

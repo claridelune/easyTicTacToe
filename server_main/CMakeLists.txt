@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 
 set(SOURCES
-    main.cpp
     admin.cpp
     player.cpp
     trainer.cpp
@@ -11,7 +10,7 @@ set(SOURCES
     socket.cpp
 )
 
-add_executable(serverMain ${SOURCES})
+add_library(TcpServerLibrary ${SOURCES})
 
-target_include_directories(serverMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} SharedLibrary)
-target_link_libraries(serverMain PRIVATE nlohmann_json)
+target_include_directories(TcpServerLibrary PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(TcpServerLibrary PUBLIC nlohmann_json sharedLibrary)

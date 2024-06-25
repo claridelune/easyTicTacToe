@@ -4,7 +4,7 @@ Config::Config() {}
 
 Config::~Config() {}
 
-void Config::set(ConfigProps options) {
+void Config::set(const ConfigProps options) {
     _records.push_back(options);
 }
 

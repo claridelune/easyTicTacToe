@@ -33,7 +33,6 @@ class Socket {
         int getIdentity();
 
         int accept();
-        void auth(const int socketId, const std::function<void(int type)> handler);
         void consumer(const int socketId, const std::function<void(char* buffer)> handler);
         void sender(const int socketId, const std::function<const std::string()> handler);
         int close(int socketId);

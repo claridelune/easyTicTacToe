@@ -2,29 +2,23 @@
 #include "manager.hpp"
 
 ServerManager::ServerManager() {
+    _database = new Database();
+
     _adminServer = new AdminServer();
     _playerServer = new PlayerServer();
     _trainerServer = new TrainerServer();    
 
-    _roleListeners[Role::ADMIN] = {
-        _adminServer,
-        std::bind(&AdminServer::emit,_adminServer),
-        std::bind(&AdminServer::subscribe, _adminServer, std::placeholders::_1)
-    };
-
-    _roleListeners[Role::PLAYER] = {
-        _playerServer,
-        std::bind(&PlayerServer::emit,_playerServer),
-        std::bind(&PlayerServer::subscribe, _playerServer, std::placeholders::_1)
-    };
-    _roleListeners[Role::TRAINER] = {
-        _trainerServer,
-        std::bind(&TrainerServer::emit,_trainerServer),
-        std::bind(&TrainerServer::subscribe, _trainerServer, std::placeholders::_1)
-    };
+    _roleListeners.insert({Role::ADMIN, std::bind(&AdminServer::subscribe, _adminServer, std::placeholders::_1)});
+    _roleListeners.insert({Role::PLAYER, std::bind(&PlayerServer::subscribe, _playerServer, std::placeholders::_1)});
+    _roleListeners.insert({Role::TRAINER, std::bind(&TrainerServer::subscribe, _trainerServer, std::placeholders::_1)});
 }
 
-ServerManager::~ServerManager() {}
+ServerManager::~ServerManager() {
+    delete _database;
+    delete _adminServer;
+    delete _playerServer;
+    delete _trainerServer;
+}
 
 void ServerManager::loop() {
     while(true) {
@@ -33,25 +27,37 @@ void ServerManager::loop() {
         // char socketIp[INET_ADDRSTRLEN];
         // inet_ntop(AF_INET, &socketAddr.sin_addr, socketIp, INET_ADDRSTRLEN);
 
-        assign(socketId);    
+        Request request;
+        Response response;
+
+        _socketServer->consumer(socketId, [&](char* buffer) {
+            json payload = json::parse(buffer);
+            request.action = payload["action"];
+            request.credential = payload["credential"];
+            request.data = payload.value("data", json::object());
+        });
+
+        auto userRef = _database->find(request.credential);
+
+        if (userRef != _database->all().end()) {
+            const UserCredential& user = *userRef;
+             auto fn = _roleListeners.find(static_cast<Role>(user.role));
+             if (fn != _roleListeners.end()) {
+                response = fn->second(request);
+                _socketServer->sender(socketId, [&]() -> std::string {
+                    json jsonMeta = {
+                        {"action", response.action},
+                        {"message", response.message},
+                        {"data", response.data}
+                    };
+    
+                    return jsonMeta.dump();
+                });
+             }
+        }  
+
+        _socketServer->close(socketId);
     }
-}
-
-void ServerManager::assign(int socketId) {
-    auto listener = [this, socketId](int rol) {
-        auto fn = _roleListeners.find(static_cast<Role>(rol));
-        if (fn != _roleListeners.end()) {
-            auto& meta = fn->second;
-            Server* instance = std::get<0>(meta);
-            auto emit = std::get<1>(meta);
-            auto subscribe = std::get<2>(meta);
-
-            _socketServer->consumer(socketId, subscribe);
-            _socketServer->sender(socketId, emit);
-        }
-    };
-
-    _socketServer->auth(socketId, listener);
 }
 
 void ServerManager::flush() {}
@@ -65,14 +71,7 @@ void ServerManager::run(size_t port, std::function<void()> handler) {
 }
 
 void ServerManager::start() {
-    json jsonMeta = {
-        {"identity", "testIdentity"},
-        {"ipAddress", "testIpAdress"},
-        {"isLeader", true}
-    };
-    
-    std::string payload = jsonMeta.dump();
-    _trainerServer->broadcast(payload);
+
 }
 
 void ServerManager::next() {

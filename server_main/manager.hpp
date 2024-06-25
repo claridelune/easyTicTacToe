@@ -5,44 +5,33 @@
 #include <unordered_map>
 #include <functional>
 
-#include <nlohmann/json.hpp>
-
 #include "socket.hpp"
-#include "config.hpp"
 #include "server.hpp"
 #include "admin.hpp"
 #include "player.hpp"
 #include "trainer.hpp"
 
-using json = nlohmann::json;
+#include "../shared/database.hpp"
 
 enum Role {
     ADMIN = 0x1,
     PLAYER = 0x2,
-    TRAINER = 0x4
+    TRAINER = 0x3
 };
 
 class ServerManager {
     private:
         Socket* _socketServer;
 
+        Database* _database;
+
         AdminServer* _adminServer;
         PlayerServer* _playerServer;
         TrainerServer* _trainerServer;
 
-        using EmitFunc = std::string (Server::*)();
-        using SuscribeFunc = void (Server::*)(std::string);
-
-        std::unordered_map<Role,
-            std::tuple<
-                Server*,
-                std::function<const std::string()>,
-                std::function<void(char* data)>
-            >
-        > _roleListeners;
+        std::unordered_map<Role,std::function<Response(Request request)>> _roleListeners;
 
         void loop();
-        void assign(int socketId);
         void flush();
 
     public:

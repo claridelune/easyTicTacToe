@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 #include <strings.h>
 
-#define PORT 4001
+#define PORT 4490
 
 int main() {
     int sockfd;
@@ -32,12 +32,22 @@ int main() {
 
     unsigned int rol = 0x4;
 
-    // auth
-    send(sockfd, &rol, sizeof(rol), 0);
-
-    // message
-    std::string message = "message desde el cliente :v";
+    std::string message = R"(
+        {
+            "action":"join",
+            "credential":"user03",
+            "data":{
+                "property1":"123",
+                "property2":"abc"
+            }
+        }
+    )";
     send(sockfd, message.c_str(), message.length(), 0);
+
+    char buffer[4096] = {0};
+    recv(sockfd, buffer, 4096, 0);
+
+     std::cout << buffer << std::endl;
 
     close(sockfd);
 

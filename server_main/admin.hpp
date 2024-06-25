@@ -6,10 +6,9 @@
 
 class AdminServer : public Server { 
     public:
-        std::string emit() override;
-        void subscribe(std::string data) override;
+        AdminServer() { initialize(); }
 
-        void broadcast(std::string payload) override;
+        void configure() override;
 };
 
 #endif

@@ -15,11 +15,11 @@ class Config {
     private:
         std::vector<ConfigProps> _records;
 
-    private:
+    public:
         Config();
         ~Config();
 
-        void set(ConfigProps options);
+        void set(const ConfigProps options);
         std::vector<ConfigProps>::iterator get(const std::string identity);
         void setLeader(const std::string identity);
         std::vector<ConfigProps> all();

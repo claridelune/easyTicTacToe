@@ -32,15 +32,6 @@ int Socket::accept() {
     return clientSocket;
 }
 
-void Socket::auth(const int socketId, const std::function<void(int type)> handler) {
-    unsigned int rol;
-    int bytesReceived = recv(socketId, &rol, sizeof(rol), 0);
-    if (bytesReceived == SOCKET_ERROR)
-        throw std::runtime_error("Error receiving message from client.");
-
-    handler(rol);
-}
-
 void Socket::consumer(const int socketId, const std::function<void(char* buffer)> handler) {
     char buffer[4096];
     memset(buffer, 0, sizeof(buffer));
