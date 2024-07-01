@@ -1,7 +1,13 @@
 #include "udp.h"
 #include <vector>
 
-#define PORT "3490"
+#include "server_main/manager.hpp"
+#include "server_main/logger.hpp"
+
+#define UDP_PORT "3490"
+#define TCP_PORT 4490
+
+Logger logger("MainServer");
 
 bool listening;
 
@@ -33,13 +39,14 @@ void UDPHandler(const int socket, const std::string& datum, sockaddr_storage add
     }
 }
 
-signed main()
-{
+void runUDPServer() {
     initializeData();
 
     listening = true;
 
-    UDPListener listener(&UDPHandler, PORT);
+    UDPListener listener(&UDPHandler, UDP_PORT);
+
+    logger.info("UDP Server is running...");
 
     listener.run();
 
@@ -48,6 +55,24 @@ signed main()
     listener.stop();
     
     std::this_thread::sleep_for(std::chrono::seconds(2));
+}
+
+void runTCPServer() {
+    ServerManager* manager = new ServerManager();
+    manager->run(TCP_PORT, []() {
+        logger.info("TCP Server is running...");
+    });
+
+    delete manager;
+}
+
+signed main()
+{
+    std::thread udpThread(runUDPServer);
+    std::thread tcpThread(runTCPServer);
+
+    udpThread.join();
+    tcpThread.join();
 
     return 0;
 }
