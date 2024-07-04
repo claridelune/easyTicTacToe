@@ -3,7 +3,7 @@
 **Clone Repo**
 
 ```
-git clone --recursive https://github.com/heaveless/castor.git
+git clone --recursive https://github.com/claridelune/easyTicTacToe.git
 ```
 
 **Compile**
