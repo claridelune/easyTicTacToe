@@ -15,6 +15,8 @@ add_subdirectory(lib/json)
 add_subdirectory(shared)
 add_subdirectory(server_main)
 add_subdirectory(server_trainer)
+add_subdirectory(player)
+add_subdirectory(admin)
 
 add_executable(MainServer ${SOURCES})
 

@@ -1,24 +1,22 @@
 #include <iostream>
-#include "trainer.hpp"
+#include "player.hpp"
 #include "../shared/utils.hpp"
 
-#define UDP_PORT "3490"
-#define TCP_CLIENT_PORT 4490
-#define TCP_SERVER_PORT 5490
-#define ROL 3
+#define PORT 4490
+#define ROL 2
 
 int main() {
-    Logger logger("TrainerServer");
+    Logger logger("PlayerClient");
     try {
-        TrainerClient trainer("127.0.0.1", TCP_CLIENT_PORT, &logger);
+        PlayerClient player("127.0.0.1", PORT, &logger);
 
         Request requestJoin;
         requestJoin.action = "join";
         requestJoin.credential = {{"role", ROL}, {"name", uuid()}};
         requestJoin.data = {};
 
-        trainer.sendRequest(requestJoin);
-        trainer.listen();
+        player.sendRequest(requestJoin);
+        player.listen();
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
     }

@@ -1,20 +1,11 @@
-#ifndef SHARED_UTILS_H
-#define SHARED_UTILS_H
+#include "utils.hpp"
 
-#include <string>
-#include <ctime>
-#include <sstream>
-#include <iomanip>
-#include <random>
-#include <functional>
-#include <cstdint>
-
-std::string getCurrentTime() {
+/* std::string getCurrentTime() {
     auto now = std::time(nullptr);
     std::ostringstream timeStream;
     timeStream << std::put_time(std::localtime(&now), "%Y-%m-%d %H:%M:%S");
     return timeStream.str();
-}
+} */
 
 std::string uuid() {
     std::random_device rd;
@@ -54,5 +45,3 @@ uint8_t uuidTohash(const std::string& uuid) {
 
     return static_cast<uint8_t>(hashValue % 256);
 }
-
-#endif
