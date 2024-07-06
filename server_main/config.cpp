@@ -5,7 +5,9 @@ Config::Config() {}
 Config::~Config() {}
 
 void Config::set(const ConfigProps options) {
-    _records.push_back(options);
+    const auto record = get(options.identity);
+    if (record == _records.end()) 
+        _records.push_back(options);
 }
 
 std::vector<ConfigProps>::iterator Config::get(const std::string identity) {

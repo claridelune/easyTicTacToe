@@ -2,19 +2,13 @@
 
 void TrainerServer::configure() {
     registerEndpoint("join", std::bind(&TrainerServer::join, this, std::placeholders::_1));
-    registerEndpoint("load", std::bind(&TrainerServer::load, this, std::placeholders::_1));
+    registerEndpoint("predict", std::bind(&TrainerServer::predict, this, std::placeholders::_1));
 }
 
 Response TrainerServer::join(Request request) {
     Response response;
 
-    // mocked data
-    _config->set({"server1", "192.168.1.1", true});
-    _config->set({"server2", "192.168.1.2", false});
-    _config->set({"server3", "192.168.1.3", false});
-    _config->set({"server4", "192.168.1.4", false});
-    _config->set({"server5", "192.168.1.5", false});
-    // end mocked
+    _config->set({request.sockName, "0.0.0.0", false});
 
     response.action = request.action;
     response.message = "Data has been successfully propagated.";
@@ -31,7 +25,7 @@ Response TrainerServer::join(Request request) {
     return response;
 }
 
-Response TrainerServer::load(Request request) {
+Response TrainerServer::predict(Request request) {
     Response response;
 
     response.action = request.action;

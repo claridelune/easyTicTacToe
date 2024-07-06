@@ -9,6 +9,8 @@ class PlayerServer : public Server {
         PlayerServer() { initialize(); }
 
         void configure() override;
+
+        Response predict(Request request);
 };
 
 #endif

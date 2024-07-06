@@ -30,18 +30,22 @@ int main() {
         return -1;
     }
 
-    unsigned int rol = 0x4;
+    unsigned int rol = 0x3;
 
     std::string message = R"(
         {
+            "credential": {
+                "role": 3,
+                "name": "juanito"
+            },
             "action":"join",
-            "credential":"user03",
             "data":{
                 "property1":"123",
                 "property2":"abc"
             }
         }
     )";
+    
     send(sockfd, message.c_str(), message.length(), 0);
 
     char buffer[4096] = {0};

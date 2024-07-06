@@ -7,11 +7,16 @@
 
 #include <nlohmann/json.hpp>
 
+// #include "manager.hpp"
+
 using json = nlohmann::json;
 
 struct Request {
+    int sockId;
+    int sockRole;
+    std::string sockName;
+
     std::string action;
-    std::string credential;
     json data;
 };
 
@@ -21,14 +26,11 @@ struct Response {
     json data;
 };
 
-struct Client {
-    int sockId;
-    std::string user;
-};
-
 class Server {
     protected:
-        std::vector<Client> _connectedClients;
+        // Context* _context;
+
+        std::unordered_map<std::string, int> _connectedClients;
         std::unordered_map<std::string, std::function<Response(Request request)>> _endpoints;
 
         void initialize() { configure(); }
@@ -47,6 +49,21 @@ class Server {
             };
         }
 
+        void addClient(const std::string name, const int sockId) {
+            auto client = _connectedClients.find(name);
+            if (client == _connectedClients.end())
+                _connectedClients.insert({ name, sockId });
+        }
+
+        // void setContext(Context* context) {
+        //     if (_context == nullptr)
+        //         _context = context;
+        // }
+
+        // Context* context() {
+        //     return _context;
+        // }
+
     public:
         Server() { }
 
@@ -57,14 +74,12 @@ class Server {
         }
 
         Response subscribe(Request request) {
+            // setContext(context);
+            addClient(request.sockName, request.sockId);
             return executeEndpoint(request.action, request);
         }
 
-        void addClient(const Client& client) {
-            _connectedClients.push_back(client);
-        }
-
-        const std::vector<Client>& getConnected() const {
+        const std::unordered_map<std::string, int>& getConnected() const {
             return _connectedClients;
         }
 };

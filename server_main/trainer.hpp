@@ -22,7 +22,7 @@ class TrainerServer : public Server {
         void configure() override;
 
         Response join(Request request);
-        Response load(Request request);
+        Response predict(Request request);
 };
 
 #endif

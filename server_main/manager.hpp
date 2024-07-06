@@ -5,13 +5,16 @@
 #include <unordered_map>
 #include <functional>
 
+#include "logger.hpp"
 #include "socket.hpp"
 #include "server.hpp"
 #include "admin.hpp"
 #include "player.hpp"
 #include "trainer.hpp"
 
-#include "../shared/database.hpp"
+// class AdminServer;
+// class PlayerServer;
+// class TrainerServer;
 
 enum Role {
     ADMIN = 0x1,
@@ -19,17 +22,20 @@ enum Role {
     TRAINER = 0x3
 };
 
+struct Context {
+    Socket* socket;
+    AdminServer* admin;
+    PlayerServer* player;
+    TrainerServer* trainer;
+};
+
 class ServerManager {
     private:
-        Socket* _socketServer;
+        Logger* _logger;
 
-        Database* _database;
+        Context _context;
 
-        AdminServer* _adminServer;
-        PlayerServer* _playerServer;
-        TrainerServer* _trainerServer;
-
-        std::unordered_map<Role,std::function<Response(Request request)>> _roleListeners;
+        std::unordered_map<Role, Server*> _servers;
 
         void loop();
         void flush();
