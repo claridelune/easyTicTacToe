@@ -1,4 +1,5 @@
 #include "player.hpp"
+#include <iostream>
 
 void PlayerServer::configure() {
     registerEndpoint("predict", std::bind(&PlayerServer::predict, this, std::placeholders::_1));
@@ -6,8 +7,6 @@ void PlayerServer::configure() {
 
 Response PlayerServer::predict(Request request) {
     Response response;
-
-    
 
     response.action = request.action;
     response.message = "Mi prediccion nunca falla >:V";

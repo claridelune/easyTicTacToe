@@ -7,9 +7,15 @@
 
 #include <nlohmann/json.hpp>
 
-// #include "manager.hpp"
-
 using json = nlohmann::json;
+
+struct Context {
+    std::function<void(const int sockId, const std::function<void(char* buffer)> x)> consumer;
+    std::function<void(const int sockId, const std::function<const std::string()> x)> sender;
+    std::unordered_map<std::string, int> connectedAdmins;
+    std::unordered_map<std::string, int> connectedPlayers;
+    std::unordered_map<std::string, int> connectedTrainers;
+};
 
 struct Request {
     int sockId;
@@ -28,14 +34,19 @@ struct Response {
 
 class Server {
     protected:
-        // Context* _context;
+        Context _context;
 
-        std::unordered_map<std::string, int> _connectedClients;
         std::unordered_map<std::string, std::function<Response(Request request)>> _endpoints;
 
         void initialize() { configure(); }
 
+        Context context() {
+            return _context;
+        }
+
     private:
+        virtual void addClient(const std::string name, const int sockId) = 0;
+        
         Response executeEndpoint(std::string action, Request request) {
             auto fn = _endpoints.find(action);
             if (fn != _endpoints.end()) {
@@ -49,23 +60,10 @@ class Server {
             };
         }
 
-        void addClient(const std::string name, const int sockId) {
-            auto client = _connectedClients.find(name);
-            if (client == _connectedClients.end())
-                _connectedClients.insert({ name, sockId });
-        }
-
-        // void setContext(Context* context) {
-        //     if (_context == nullptr)
-        //         _context = context;
-        // }
-
-        // Context* context() {
-        //     return _context;
-        // }
-
     public:
-        Server() { }
+        Server(Context& context) {
+            _context = context;
+        }
 
         virtual void configure() = 0;
 
@@ -74,13 +72,8 @@ class Server {
         }
 
         Response subscribe(Request request) {
-            // setContext(context);
             addClient(request.sockName, request.sockId);
             return executeEndpoint(request.action, request);
-        }
-
-        const std::unordered_map<std::string, int>& getConnected() const {
-            return _connectedClients;
         }
 };
 

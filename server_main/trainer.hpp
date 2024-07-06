@@ -9,8 +9,15 @@ class TrainerServer : public Server {
     private:
         Config* _config;
 
+        void addClient(const std::string name, const int sockId) override {
+            auto records = context().connectedTrainers;
+            auto trainer = records.find(name);
+            if (trainer == records.end())
+                records.insert({ name, sockId });
+        }
+
     public:
-        TrainerServer() { 
+        TrainerServer(Context& context): Server(context) { 
             initialize();
             _config = new Config();
         }

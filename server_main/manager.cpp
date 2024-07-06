@@ -3,25 +3,17 @@
 
 ServerManager::ServerManager() {
     _logger = new Logger("ServerManager");
-
-    _context.admin = new AdminServer();
-    _context.player = new PlayerServer();
-    _context.trainer = new TrainerServer();    
-
-    _servers.insert({Role::ADMIN, _context.admin });
-    _servers.insert({Role::PLAYER, _context.player });
-    _servers.insert({Role::TRAINER, _context.trainer });
 }
 
 ServerManager::~ServerManager() {
-    delete _context.admin;
-    delete _context.player;
-    delete _context.trainer;
+    delete _adminServer;
+    delete _playerServer;
+    delete _trainerServer;
 }
 
 void ServerManager::loop() {
     while(true) {
-        int socketId = _context.socket->accept();
+        int socketId = _socketServer->accept();
         // struct sockaddr_in  socketAddr;
         // char socketIp[INET_ADDRSTRLEN];
         // inet_ntop(AF_INET, &socketAddr.sin_addr, socketIp, INET_ADDRSTRLEN);
@@ -29,7 +21,7 @@ void ServerManager::loop() {
         Request request;
         Response response;
 
-        _context.socket->consumer(socketId, [&](char* buffer) {
+        _socketServer->consumer(socketId, [&](char* buffer) {
             _logger->info("REQUEST: " + std::string(buffer));
             json payload = json::parse(buffer);
             request.sockId = socketId;
@@ -43,7 +35,7 @@ void ServerManager::loop() {
         auto srv = _servers.find(static_cast<Role>(request.sockRole));
         if (srv != _servers.end()) {
             response = srv->second->subscribe(request);
-            _context.socket->sender(socketId, [&]() -> std::string {
+            _socketServer->sender(socketId, [&]() -> std::string {
                 json jsonMeta = {
                     {"action", response.action},
                     {"message", response.message},
@@ -67,22 +59,30 @@ void ServerManager::loop() {
 void ServerManager::flush() {}
 
 void ServerManager::run(size_t port, std::function<void()> handler) {
-    _context.socket = new Socket(port);
-    _context.socket->configure();
+    _socketServer = new Socket(port);
+    _socketServer->configure();
+
+    auto consumerFn = std::bind(&Socket::consumer, _socketServer, std::placeholders::_1, std::placeholders::_2);
+    auto senderFn = std::bind(&Socket::sender, _socketServer, std::placeholders::_1, std::placeholders::_2);
+
+    Context context {
+        consumerFn,
+        senderFn
+    };
+
+    _adminServer = new AdminServer(context);
+    _playerServer = new PlayerServer(context);
+    _trainerServer = new TrainerServer(context);    
+
+    _servers.insert({Role::ADMIN, _adminServer });
+    _servers.insert({Role::PLAYER, _playerServer });
+    _servers.insert({Role::TRAINER, _trainerServer });
 
     handler();
     loop();
 }
 
-void ServerManager::start() {
-
-}
-
-void ServerManager::next() {
-    // new generation
-}
-
 void ServerManager::stop() {
-    int socketIdentity = _context.socket->getIdentity();
-    _context.socket->close(socketIdentity);
+    int socketIdentity = _socketServer->getIdentity();
+    _socketServer->close(socketIdentity);
 }
