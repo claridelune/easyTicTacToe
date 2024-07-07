@@ -12,7 +12,7 @@
 #include "../shared/utils.hpp"
 
 #define IP "127.0.0.1"
-#define UDP_PORT "3490"
+#define UDP_PORT 3490
 
 #include <iostream>
 

@@ -129,27 +129,40 @@ void UDPTalker::request(const std::string& message)
 
 void UDPTalker::sendUDP(const std::string &message)
 {
-    sendto(socketFD, message.c_str(), message.size(), 0, p->ai_addr, p->ai_addrlen);
+    socklen_t addrLen = sizeof(hostAddr);
+    sendto(socketFD, message.c_str(), message.size(), 0, (struct sockaddr*)&hostAddr, addrLen);
     logger.info("Sent: " + message);
 }
 
-UDPTalker::UDPTalker(int timeout, const std::string &hostIP, const std::string &hostPort, std::function<bool(const std::string& datum)> eval) :
+UDPTalker::UDPTalker(int timeout, const std::string &hostIP, const uint16_t hostPort, std::function<bool(const std::string& datum)> eval) :
     time(timeout), keep(false), func(eval), thId(0), logger("UDPTalker")
 {
-    struct addrinfo hints, *servinfo;
+
+    // struct addrinfo hints, *servinfo;
     int rv;
 
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
-
-    if ((rv = getaddrinfo(hostIP.c_str(), hostPort.c_str(), &hints, &servinfo)) != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        exit(211);
+    socketFD = socket(AF_INET, SOCK_DGRAM, 0);
+    if (socketFD < 0) {
+        perror("Socket creation failed");
+        exit(1);
     }
 
+    memset(&hostAddr, 0, sizeof(hostAddr));
+    hostAddr.sin_family = AF_INET;
+    hostAddr.sin_port = htons(hostPort);
+    hostAddr.sin_addr.s_addr = inet_addr(hostIP.c_str());
+
+    /* memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM; */
+
+    /* if ((rv = getaddrinfo(hostIP.c_str(), hostPort.c_str(), &hints, &servinfo)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        exit(211);
+    } */
+
     // loop through all the results and make a socket
-    for(p = servinfo; p != NULL; p = p->ai_next) {
+    /* for(p = servinfo; p != NULL; p = p->ai_next) {
         if ((socketFD = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
             perror("talker: socket");
             continue;
@@ -159,11 +172,12 @@ UDPTalker::UDPTalker(int timeout, const std::string &hostIP, const std::string &
     if (p == NULL) {
         fprintf(stderr, "talker: failed to create socket\n");
         exit(212);
-    }
+    } */
 }
 
 std::string UDPTalker::sendNReceive(const std::string &message)
 {
+    std::cout << "asadlfkjslakdf" << std::endl;
     keep = true;
     std::thread th(&UDPTalker::request, this, message);
     th.detach();
@@ -174,7 +188,8 @@ std::string UDPTalker::sendNReceive(const std::string &message)
 
         int numbytes;
 
-        if ((numbytes = recvfrom(socketFD, buff, maxbuff, 0, p->ai_addr, &p->ai_addrlen)) == -1) {
+        std::cout << "antes" << std::endl;
+        if ((numbytes = recvfrom(socketFD, buff, maxbuff, 0, nullptr, nullptr)) == -1) {
             perror("recvfrom");
             exit(213);
         }

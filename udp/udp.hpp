@@ -44,6 +44,7 @@ class UDPTalker
     int thId;
     int time;
     struct addrinfo *p;
+    struct sockaddr_in hostAddr;
 
     std::string lastData;
     std::function<bool(const std::string& datum)> func;
@@ -52,7 +53,7 @@ class UDPTalker
     void sendUDP(const std::string& message);
 
 public:
-    UDPTalker(int timeout, const std::string& hostIP, const std::string& hostPort, std::function<bool(const std::string& datum)> eval);
+    UDPTalker(int timeout, const std::string& hostIP, const uint16_t hostPort, std::function<bool(const std::string& datum)> eval);
 
     std::string sendNReceive(const std::string& message);
 };
