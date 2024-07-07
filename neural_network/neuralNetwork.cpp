@@ -1,4 +1,4 @@
-#include "neuralNetwork.h"
+#include "neuralNetwork.hpp"
 
 NeuralNetwork::NeuralNetwork(unsigned int _n_inputs, unsigned int _n_hidden,
                              unsigned int _n_outputs, unsigned int _n_epochs,

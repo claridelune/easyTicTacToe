@@ -1,4 +1,4 @@
-#include "dataHandler.h"
+#include "dataHandler.hpp"
 
 std::vector<std::vector<double>> DataHandler::load_data(const std::string& file_path) {
     std::vector<std::vector<double>> data;
@@ -39,8 +39,18 @@ std::vector<int> DataHandler::load_labels(const std::string& file_path) {
 }
 
 
-void DataHandler::format_training_data(const std::string &data, std::vector<std::vector<double>> &train_data, std::vector<int> &train_labels) {
-  /*Lo implemento despues xd*/
+void DataHandler::format_training_data(const std::vector<std::string> &data, std::vector<std::vector<double>> &train_data, std::vector<int> &train_labels)
+{
+  for (auto& d : data)
+  {
+    std::vector<double> board(9);
+    for (int i = 0; i < 9; i++)
+    {
+        board[i] = d[i] - '0';
+    }
+    train_data.push_back(board);
+    train_labels.push_back(d[9]);
+  }
 }
 
 std::string DataHandler::vector_to_binary_string(const std::vector<std::vector<double>>& w1, const std::vector<std::vector<double>>& w2) {
@@ -51,8 +61,14 @@ void DataHandler::binaryStringToVector(std::string weights, std::vector<std::vec
   /*Lo implemento despues xd*/
 }
 
-std::vector<double> DataHandler::getBoard(std::string board) {
-  /*Lo implemento despues xd*/
+std::vector<double> DataHandler::getBoard(std::string board)
+{
+    std::vector<double> b(9);
+    for (int i = 0; i < 9; i++)
+    {
+        b[i] = board[i] - '0';
+    }
+    return b;
 }
 
 void DataHandler::normalize_data(std::vector<std::vector<double>>& data) {

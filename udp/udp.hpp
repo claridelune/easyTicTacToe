@@ -12,11 +12,14 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <cstring>
-#include <cassert>
 #include <iostream>
+
+#include "../shared/logger.hpp"
 
 class UDPListener
 {
+    Logger logger;
+
     int socketFD;
     bool keep;
     std::function<void(const int, const std::string&, sockaddr_storage, socklen_t)> func;
@@ -34,6 +37,8 @@ public:
 
 class UDPTalker
 {
+    Logger logger;
+
     int socketFD;
     bool keep;
     int thId;
@@ -57,7 +62,3 @@ void sendString(const int socket, const std::string& message, sockaddr_storage a
 char getSum(const std::string& message);
 
 bool checkSum(const std::string& message);
-
-int binaryToInt(const std::string& binaryNumber);
-
-std::string intToBinary(int num);

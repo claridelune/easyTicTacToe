@@ -45,3 +45,34 @@ uint8_t uuidTohash(const std::string& uuid) {
 
     return static_cast<uint8_t>(hashValue % 256);
 }
+
+union merge
+{
+    int num;
+    char str[4];
+};
+
+int binaryToInt(const std::string &binaryNumber)
+{
+    assert(binaryNumber.size() == 4);
+
+    merge x;
+    for (int i = 0; i < 4; i++)
+        x.str[i] = binaryNumber[i];
+
+    return x.num;
+}
+
+std::string intToBinary(int num)
+{
+    std::string out;
+    out.resize(4);
+
+    merge x;
+    x.num = num;
+
+    for (int i = 0; i < 4; i++)
+        out[i] = x.str[i];
+
+    return out;
+}

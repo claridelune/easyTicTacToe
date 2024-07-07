@@ -1,7 +1,8 @@
-#include "udp.h"
+#include "udp.hpp"
+#include <cassert>
 
 UDPListener::UDPListener(const std::function<void(const int, const std::string&, sockaddr_storage, socklen_t)> &_func, const char* _port) :
-    func(_func), keep(false)
+    func(_func), keep(false), logger("UDPListener")
 {
     struct addrinfo hints, *servinfo, *p;
     int rv;
@@ -58,7 +59,7 @@ void UDPListener::loop()
         buff[numbytes] = '\0';
         std::string datum(buff, numbytes);
 
-        std::cout << "UDP RECV: " << datum << '\n';
+        logger.info("Received: " + datum);
         
         std::thread th(func, socketFD, datum, addr, addr_size);
         th.detach();
@@ -87,7 +88,6 @@ bool UDPListener::isRunning()
 
 void sendString(const int socket, const std::string& message, sockaddr_storage addr, socklen_t addr_size)
 {
-    std::cout << "UDP SEND: " << message << '\n';
     sendto(socket, message.c_str(), message.size(), 0, (struct sockaddr *) &addr, addr_size);
 }
 
@@ -117,37 +117,6 @@ bool checkSum(const std::string &message)
     return x == check;
 }
 
-union merge
-{
-    int num;
-    char str[4];
-};
-
-int binaryToInt(const std::string &binaryNumber)
-{
-    assert(binaryNumber.size() == 4);
-
-    merge x;
-    for (int i = 0; i < 4; i++)
-        x.str[i] = binaryNumber[i];
-
-    return x.num;
-}
-
-std::string intToBinary(int num)
-{
-    std::string out;
-    out.resize(4);
-
-    merge x;
-    x.num = num;
-
-    for (int i = 0; i < 4; i++)
-        out[i] = x.str[i];
-
-    return out;
-}
-
 void UDPTalker::request(const std::string& message)
 {
     int myId = thId;
@@ -160,12 +129,12 @@ void UDPTalker::request(const std::string& message)
 
 void UDPTalker::sendUDP(const std::string &message)
 {
-    std::cout << "UDP SEND: " << message << '\n';
     sendto(socketFD, message.c_str(), message.size(), 0, p->ai_addr, p->ai_addrlen);
+    logger.info("Sent: " + message);
 }
 
 UDPTalker::UDPTalker(int timeout, const std::string &hostIP, const std::string &hostPort, std::function<bool(const std::string& datum)> eval) :
-    time(timeout), keep(false), func(eval), thId(0)
+    time(timeout), keep(false), func(eval), thId(0), logger("UDPTalker")
 {
     struct addrinfo hints, *servinfo;
     int rv;
@@ -212,7 +181,7 @@ std::string UDPTalker::sendNReceive(const std::string &message)
         buff[numbytes] = '\0';
         std::string datum(buff, numbytes);
 
-        std::cout << "UDP RECV: " << datum << '\n';
+        logger.info("Received: " + datum);
         
         if (func(datum))
         {
