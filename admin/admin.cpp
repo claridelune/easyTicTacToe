@@ -3,8 +3,8 @@
 #define ROL 1
 
 void AdminClient::configure() {
-    registerHandler("start", std::bind(&AdminClient::onStartResponse, this, std::placeholders::_1));
-    registerHandler("next", std::bind(&AdminClient::onNextResponse, this, std::placeholders::_1));
+    registerVoidHandler("start", std::bind(&AdminClient::onStartResponse, this, std::placeholders::_1));
+    registerVoidHandler("next", std::bind(&AdminClient::onNextResponse, this, std::placeholders::_1));
 }
 
 void AdminClient::loop() {
@@ -31,23 +31,10 @@ void AdminClient::loop() {
     }
 }
 
-Request AdminClient::onStartResponse(Response response) {
-    Request request;
-    
-    request.action = response.action;
-
-
+void AdminClient::onStartResponse(Response response) {
     logger->info("Start Response: " + response.message);
-
-    return request;
 }
 
-Request AdminClient::onNextResponse(Response response) {
-    Request request;
-
-    request.action = response.action;
-
+void AdminClient::onNextResponse(Response response) {
     logger->info("Next Response: " + response.message);
-    
-    return request;
 }

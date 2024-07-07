@@ -67,13 +67,13 @@ int main() {
 
     // Training
     
-    DataHandler dataHandler;
+    /* DataHandler dataHandler;
     NeuralNetwork nn(9, 5, 9, 30, 0.01);
     
     std::vector<std::vector<double>> train_data;
     std::vector<int> train_labels;
     dataHandler.format_training_data(data, train_data, train_labels);
-    dataHandler.normalize_data(train_data);
+    dataHandler.normalize_data(train_data); */
 
     /*
     * Entrenamiento de la red neuronal
@@ -81,7 +81,7 @@ int main() {
     * Solo 1 forward y 1 backpropagate
     * */
     
-    nn.run(train_data, train_labels);
+    // nn.run(train_data, train_labels);
 
     /*
     * Procedimiento de los pesos
@@ -97,10 +97,10 @@ int main() {
     * Predict devuelve el casillero donde va a mover en move
     * */
 
-    std::string board = "000000000";
+    /* std::string board = "000000000";
     int move = nn.predict(dataHandler.getBoard(board));
 
-    std::cout << move << '\n';
+    std::cout << move << '\n'; */
 
     return 0;
 }

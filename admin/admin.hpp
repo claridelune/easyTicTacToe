@@ -20,8 +20,8 @@ class AdminClient : public Client {
 
         void configure() override;
         void loop();
-        Request onStartResponse(Response response);
-        Request onNextResponse(Response response);
+        void onStartResponse(Response response);
+        void onNextResponse(Response response);
 };
 
 #endif

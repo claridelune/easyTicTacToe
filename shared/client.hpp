@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <functional>
 #include <nlohmann/json.hpp>
+#include <variant>
 #include "socket.hpp"
 #include "logger.hpp"
 
@@ -24,7 +25,8 @@ struct Response {
 
 class Client {
     protected:
-        std::unordered_map<std::string, std::function<Request(Response response)>> _handlers;
+        using Handler = std::variant<std::function<void(Response response)>, std::function<Request(Response response)>>;
+        std::unordered_map<std::string, Handler> _handlers;
         Logger* logger;
 
         void initialize() {
@@ -36,7 +38,7 @@ class Client {
         void handleResponse(const std::string& action, Response response) {
             auto fn = _handlers.find(action);
             if (fn != _handlers.end()) {
-                fn->second(response);
+                std::visit([&](auto&& handler) { handler(response); }, fn->second);
             } else {
                 logger->error("No handler registered for action: " + action);
             }
@@ -60,7 +62,11 @@ class Client {
 
         virtual void configure() = 0;
 
-        void registerHandler(std::string action, std::function<Request(Response response)> handler) {
+        void registerVoidHandler(std::string action, std::function<void(Response response)> handler) {
+            _handlers.insert({action, handler});
+        }
+
+        void registerRequestHandler(std::string action, std::function<Request(Response response)> handler) {
             _handlers.insert({action, handler});
         }
 

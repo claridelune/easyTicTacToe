@@ -11,7 +11,7 @@ class PlayerClient : public Client {
 
         void configure() override;
 
-        Request onJoinResponse(Response response);
+        void onJoinResponse(Response response);
 };
 
 #endif
