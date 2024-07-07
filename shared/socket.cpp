@@ -4,18 +4,28 @@ Socket::Socket(const size_t port) {
     _socketAddr.sin_family = AF_INET;
     _socketAddr.sin_port = htons(port); 
     _socketAddr.sin_addr.s_addr = INADDR_ANY; 
+
+    _logger = new Logger("Socket(server)");
 }
 
 Socket::Socket(const std::string& ip, const size_t port) {
     _socketAddr.sin_family = AF_INET;
     _socketAddr.sin_port = htons(port); 
     _socketAddr.sin_addr.s_addr  = inet_addr(ip.c_str());
+
+    _logger = new Logger("Socket(client)");
 }
 
-Socket::~Socket() {}
+Socket::~Socket() {
+    delete _logger;
+}
 
 int Socket::getIdentity() {
     return _socketId;
+}
+
+sockaddr_in Socket::getAddress() {
+    return _socketAddr;
 }
 
 void Socket::configureServer() {
@@ -49,19 +59,58 @@ int Socket::accept() {
     return clientSocket;
 }
 
-void Socket::consumer(const int socketId, const std::function<void(char* buffer)> handler) {
-    char buffer[4096];
-    memset(buffer, 0, sizeof(buffer));
-    int bytesReceived = recv(socketId, buffer, sizeof(buffer), 0);
-    if (bytesReceived == SOCKET_ERROR)
-        throw std::runtime_error("Error receiving message from client.");
+int Socket::consumer(const int socketId, const std::function<void(std::string b)> handler) {
+    char bufferSize[PROTOCOL_SIZE];
+    int receivedSize = recv(socketId, bufferSize, PROTOCOL_SIZE, 0);
 
-    handler(buffer);
+    if (receivedSize == SOCKET_ERROR || receivedSize == 0)
+        return receivedSize;
+
+    int contentSize = hexToInt(bufferSize);
+
+    _logger->info("consumer->buffer(size): [hex]=" + std::string(bufferSize) + " [size]=" + std::to_string(contentSize));
+
+    std::vector<char> contentBuffer(contentSize);
+    
+    int totalReceived = 0;
+    while(totalReceived < contentSize) {
+        int bytesReceived = recv(socketId, contentBuffer.data() + totalReceived, contentSize - totalReceived, 0);
+        if (bytesReceived == SOCKET_ERROR || bytesReceived == 0)
+            return bytesReceived;
+
+        totalReceived += bytesReceived;
+    }
+
+    const std::string contentValue = std::string(contentBuffer.begin(), contentBuffer.end());
+
+    _logger->info("sender->buffer(content): " + contentValue);
+
+    handler(contentValue);
+
+    return receivedSize;
 }
         
 void Socket::sender(const int socketId, const std::function<const std::string()> handler) {
-    const std::string bytesSent = handler();
-    send(socketId, bytesSent.c_str(), bytesSent.size() + 1, 0);
+    const std::string contentValue = handler();
+    const std::string contentSize = intToHex(contentValue.size());
+    const std::string contentBuffer = contentSize + contentValue;
+
+    _logger->info("sender->buffer(size): [hex]=" + contentSize + " [size]=" + std::to_string(contentValue.size()));
+
+    size_t totalSent = 0;
+    size_t contentLength = contentBuffer.size();
+    const char* data = contentBuffer.c_str();
+
+    _logger->info("sender->buffer(content): " + std::string(data));
+
+    while(totalSent < contentLength) {
+        int bytesSent = send(socketId, data + totalSent, contentLength - totalSent, 0);
+        if (bytesSent == SOCKET_ERROR) {
+            break;
+        }
+
+        totalSent += bytesSent;
+    }
 }
 
 int Socket::close(int socketId) {

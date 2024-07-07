@@ -30,7 +30,7 @@ Response AdminServer::start(Request request) {
             )";
         });
 
-        ctx.consumer(item.second, [&](char* buffer) {
+        ctx.consumer(item.second, [&](std::string buffer) {
             std::cout << "estoy recbiendo" << std::endl;
             std::cout << buffer << std::endl;
         });

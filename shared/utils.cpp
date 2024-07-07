@@ -1,12 +1,5 @@
 #include "utils.hpp"
 
-/* std::string getCurrentTime() {
-    auto now = std::time(nullptr);
-    std::ostringstream timeStream;
-    timeStream << std::put_time(std::localtime(&now), "%Y-%m-%d %H:%M:%S");
-    return timeStream.str();
-} */
-
 std::string uuid() {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -49,15 +42,15 @@ uint8_t uuidTohash(const std::string& uuid) {
 union merge
 {
     int num;
-    char str[4];
+    char str[PROTOCOL_SIZE];
 };
 
 int binaryToInt(const std::string &binaryNumber)
 {
-    assert(binaryNumber.size() == 4);
+    assert(binaryNumber.size() == PROTOCOL_SIZE);
 
     merge x;
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < PROTOCOL_SIZE; i++)
         x.str[i] = binaryNumber[i];
 
     return x.num;
@@ -66,13 +59,27 @@ int binaryToInt(const std::string &binaryNumber)
 std::string intToBinary(int num)
 {
     std::string out;
-    out.resize(4);
+    out.resize(PROTOCOL_SIZE);
 
     merge x;
     x.num = num;
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < PROTOCOL_SIZE; i++)
         out[i] = x.str[i];
 
     return out;
+}
+
+int hexToInt(const std::string& value) {
+    int num;
+    std::stringstream ss;
+    ss << std::hex << value;
+    ss >> num;
+    return num;
+}
+
+std::string intToHex(int value) {
+    std::stringstream ss;
+    ss << std::hex << std::setw(PROTOCOL_SIZE) << std::setfill('0') << value;
+    return ss.str();
 }

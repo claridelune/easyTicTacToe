@@ -55,8 +55,8 @@ void ServerManager::loop() {
 
                 _logger->info("Iniciando consumer and sender con: " + std::to_string(sd));
 
-                int valread = _socketServer->consumer(sd, [&](char* buffer) {
-                    _logger->info("REQUEST: " + std::string(buffer));
+                int valread = _socketServer->consumer(sd, [&](std::string buffer) {
+                    _logger->info("REQUEST: " + buffer);
                     json payload = json::parse(buffer);
                     request.sockId = sd;
                     request.sockRole = payload["credential"]["role"];
@@ -106,7 +106,7 @@ void ServerManager::flush() {}
 
 void ServerManager::run(size_t port, std::function<void()> handler) {
     _socketServer = new Socket(port);
-    _socketServer->configure();
+    _socketServer->configureServer();
 
     auto consumerFn = std::bind(&Socket::consumer, _socketServer, std::placeholders::_1, std::placeholders::_2);
     auto senderFn = std::bind(&Socket::sender, _socketServer, std::placeholders::_1, std::placeholders::_2);

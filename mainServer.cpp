@@ -3,7 +3,7 @@
 
 #include "udp/udp.hpp"
 #include "server_main/manager.hpp"
-#include "server_main/logger.hpp"
+#include "shared/logger.hpp"
 #include "shared/utils.hpp"
 
 #define UDP_PORT "3490"

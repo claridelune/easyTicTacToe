@@ -10,12 +10,13 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#include "logger.hpp"
-#include "socket.hpp"
 #include "server.hpp"
 #include "admin.hpp"
 #include "player.hpp"
 #include "trainer.hpp"
+
+#include "../shared/logger.hpp"
+#include "../shared/socket.hpp"
 
 enum Role {
     ADMIN = 0x1,

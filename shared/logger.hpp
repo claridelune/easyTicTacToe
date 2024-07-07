@@ -1,5 +1,5 @@
-#ifndef SERVER_MAIN_LOGGER_H
-#define SERVER_MAIN_LOGGER_H
+#ifndef SHARED_LOGGER_H
+#define SHARED_LOGGER_H
 
 #include <iostream>
 #include <string>

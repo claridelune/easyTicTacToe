@@ -12,6 +12,9 @@
 #include <unistd.h> 
 #include <stdexcept>
 
+#include "utils.hpp"
+#include "logger.hpp"
+
 inline int socketAccept(int sockfd, struct sockaddr* addr, socklen_t* addrlen) {
     return accept(sockfd, addr, addrlen);
 }
@@ -25,6 +28,8 @@ class Socket {
         sockaddr_in _socketAddr;
         int _socketId;
 
+        Logger* _logger;
+
     public:
         Socket(const size_t port);
         Socket(const std::string& ip, const size_t port);
@@ -32,11 +37,13 @@ class Socket {
 
         void configureServer();
         void configureClient();
+        
         int getIdentity();
+        sockaddr_in getAddress();
 
         int accept();
         void connectToServer();
-        void consumer(const int socketId, const std::function<void(char* buffer)> handler);
+        int consumer(const int socketId, const std::function<void(std::string b)> handler);
         void sender(const int socketId, const std::function<const std::string()> handler);
         int close(int socketId);
 };

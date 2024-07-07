@@ -5,9 +5,7 @@ set(SOURCES
     player.cpp
     trainer.cpp
     config.cpp
-    logger.cpp
     manager.cpp
-    socket.cpp
 )
 
 add_library(TcpServerLibrary ${SOURCES})

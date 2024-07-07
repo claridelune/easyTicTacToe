@@ -78,8 +78,8 @@ class Client {
         }
 
         void listen() {
-            _socketClient->consumer(_socketClient->getIdentity(), [&](char* buffer) {
-                logger->info("Response: " + std::string(buffer));
+            _socketClient->consumer(_socketClient->getIdentity(), [&](std::string buffer) {
+                logger->info("Response: " + buffer);
                 json payload = json::parse(buffer);
                 Response response;
                 response.action = payload["action"];

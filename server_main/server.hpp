@@ -10,7 +10,7 @@
 using json = nlohmann::json;
 
 struct Context {
-    std::function<void(const int sockId, const std::function<void(char* buffer)> x)> consumer;
+    std::function<void(const int sockId, const std::function<void(std::string b)> x)> consumer;
     std::function<void(const int sockId, const std::function<const std::string()> x)> sender;
     std::unordered_map<std::string, int> connectedAdmins;
     std::unordered_map<std::string, int> connectedPlayers;
