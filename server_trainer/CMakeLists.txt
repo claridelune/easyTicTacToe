@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.28)
 
 set(SOURCES
-    trainer.cpp
+    trainerClient.cpp
+    trainerServer.cpp
     main.cpp
 )
 
