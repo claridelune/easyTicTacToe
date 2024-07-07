@@ -3,15 +3,65 @@
 void TrainerServer::configure() {
     registerEndpoint("join", std::bind(&TrainerServer::join, this, std::placeholders::_1));
     registerEndpoint("predict", std::bind(&TrainerServer::predict, this, std::placeholders::_1));
+    registerEndpoint("keepAlive", std::bind(&TrainerServer::handleKeepAlive, this, std::placeholders::_1));
+    registerEndpoint("start", std::bind(&TrainerServer::handleKeepAlive, this, std::placeholders::_1));
+    registerEndpoint("continue", std::bind(&TrainerServer::handleKeepAlive, this, std::placeholders::_1));
 }
 
-Response TrainerServer::join(Request request) {
-    Response response;
+void TrainerServer::run() {
+    std::thread keepAliveThread(&TrainerServer::keepAlive, this);
+    keepAliveThread.detach();
+}
 
-    _config->set({request.sockName, "0.0.0.0", false});
+void TrainerServer::stop() {
+    _isRunning = false;
+}
+void TrainerServer::keepAlive() {
+    while (_isRunning) {
+        sleep(5);
 
-    response.action = request.action;
-    response.message = "Data has been successfully propagated.";
+        auto now = std::chrono::steady_clock::now();
+        for (auto it = _context.connectedTrainers.begin(); it != _context.connectedTrainers.end();) {
+            const std::string& trainerName = it->first;
+            int sockId = it->second;
+
+            _context.sender(sockId, [&]() -> std::string {
+                    return R"(
+                        {
+                          "action": "keepAlive",
+                          "message": "Keep Alive"
+                        }
+                    )";
+            });
+
+            auto lastResponseTime = _lastKeepAliveResponse[trainerName];
+            auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - lastResponseTime).count();
+            if (duration > 10) {
+                std::cout << "Trainer disconnected: " << trainerName << std::endl;
+                _context.connectedTrainers.erase(it++);
+                reassignLeader();
+            } else {
+                ++it;
+            }
+        }
+    }
+}
+
+void TrainerServer::reassignLeader() {
+    if (!_context.connectedTrainers.empty()) {
+        auto newLeader = _context.connectedTrainers.begin()->first;
+        _config->setLeader(newLeader);
+        std::cout << "New leader assigned: " << newLeader;
+
+        sendConfiguration();
+    }
+}
+
+void TrainerServer::sendConfiguration() {
+    json responseJson;
+    responseJson["action"] = "config";
+    responseJson["message"] = "New configuration.";
+    responseJson["data"] = json::array();
 
     for (const auto& item : _config->all()) {
         json jsonArray = {
@@ -19,8 +69,28 @@ Response TrainerServer::join(Request request) {
             {"ipAddress", item.ipAddress},
             {"isLeader", item.isLeader}
         };
-        response.data.push_back(jsonArray);
+        responseJson["data"].push_back(jsonArray);
     }
+
+    std::string responseStr = responseJson.dump();
+
+    for (const auto& trainer : _context.connectedTrainers) {
+        _context.sender(trainer.second, [&responseStr]() -> std::string {
+            return responseStr;
+        });
+    }
+}
+
+Response TrainerServer::join(Request request) {
+    Response response;
+
+    _config->set({request.sockName, "0.0.0.0", false});
+    _lastKeepAliveResponse[request.sockName] = std::chrono::steady_clock::now();
+
+    sendConfiguration();
+
+    response.action = request.action;
+    response.message = "Join successful.";
 
     return response;
 }
@@ -33,3 +103,14 @@ Response TrainerServer::predict(Request request) {
 
     return response;
 }
+
+Response TrainerServer::handleKeepAlive(Request request) {
+    Response response;
+    _lastKeepAliveResponse[request.sockName] = std::chrono::steady_clock::now();
+
+    response.action = request.action;
+    response.message = "Keep alive acknowledged";
+
+    return response;
+}
+

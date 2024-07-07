@@ -124,6 +124,8 @@ void ServerManager::run(size_t port, std::function<void()> handler) {
     _servers.insert({Role::PLAYER, _playerServer });
     _servers.insert({Role::TRAINER, _trainerServer });
 
+    _trainerServer->run();
+
     handler();
     loop();
 }
@@ -131,4 +133,5 @@ void ServerManager::run(size_t port, std::function<void()> handler) {
 void ServerManager::stop() {
     int socketIdentity = _socketServer->getIdentity();
     _socketServer->close(socketIdentity);
+    _trainerServer->stop();
 }

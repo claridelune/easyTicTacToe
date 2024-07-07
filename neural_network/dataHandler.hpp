@@ -16,8 +16,6 @@ public:
   void normalize_data(std::vector<std::vector<double>> &data);
 
   void format_training_data(const std::vector<std::string> &data, std::vector<std::vector<double>> &train_data, std::vector<int> &train_labels);
-  std::string vector_to_binary_string(const std::vector<std::vector<double>>& w1, const std::vector<std::vector<double>>& w2);
-  void binaryStringToVector(std::string weights, std::vector<std::vector<double>>& w1, std::vector<std::vector<double>>& w2);
   std::vector<double> getBoard(std::string board);
 
 private:

@@ -53,14 +53,6 @@ void DataHandler::format_training_data(const std::vector<std::string> &data, std
   }
 }
 
-std::string DataHandler::vector_to_binary_string(const std::vector<std::vector<double>>& w1, const std::vector<std::vector<double>>& w2) {
-  /*Lo implemento despues xd*/
-}
-
-void DataHandler::binaryStringToVector(std::string weights, std::vector<std::vector<double>>& w1, std::vector<std::vector<double>>& w2) {
-  /*Lo implemento despues xd*/
-}
-
 std::vector<double> DataHandler::getBoard(std::string board)
 {
     std::vector<double> b(9);
