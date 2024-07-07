@@ -5,15 +5,23 @@
 #include "../shared/utils.hpp"
 
 class AdminClient : public Client {
+    private:
+        std::string _identity;
+
+        std::string getIdentity() {
+            return _identity;
+        }
+
     public:
         AdminClient(const std::string& ip, const size_t port, Logger* logger) : Client(ip, port, logger) {
             initialize();
+            _identity = uuid();
         }
 
         void configure() override;
         void loop();
-        void onStartResponse(Response response);
-        void onNextResponse(Response response);
+        Request onStartResponse(Response response);
+        Request onNextResponse(Response response);
 };
 
 #endif

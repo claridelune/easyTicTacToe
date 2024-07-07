@@ -12,6 +12,10 @@ int Socket::getIdentity() {
     return _socketId;
 }
 
+sockaddr_in Socket::getAddress() {
+    return _socketAddr;
+}
+
 void Socket::configure() {
     _socketId = socket(AF_INET, SOCK_STREAM, 0);
     if (_socketId == SOCKET_ERROR)
@@ -32,14 +36,14 @@ int Socket::accept() {
     return clientSocket;
 }
 
-void Socket::consumer(const int socketId, const std::function<void(char* buffer)> handler) {
+int Socket::consumer(const int socketId, const std::function<void(char* buffer)> handler) {
     char buffer[4096];
     memset(buffer, 0, sizeof(buffer));
     int bytesReceived = recv(socketId, buffer, sizeof(buffer), 0);
-    if (bytesReceived == SOCKET_ERROR)
-        throw std::runtime_error("Error receiving message from client.");
+    if (bytesReceived != SOCKET_ERROR || bytesReceived != 0)
+        handler(buffer);
 
-    handler(buffer);
+    return bytesReceived;
 }
         
 void Socket::sender(const int socketId, const std::function<const std::string()> handler) {

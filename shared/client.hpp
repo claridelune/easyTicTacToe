@@ -24,7 +24,7 @@ struct Response {
 
 class Client {
     protected:
-        std::unordered_map<std::string, std::function<void(Response response)>> _handlers;
+        std::unordered_map<std::string, std::function<Request(Response response)>> _handlers;
         Logger* logger;
 
         void initialize() {
@@ -60,7 +60,7 @@ class Client {
 
         virtual void configure() = 0;
 
-        void registerHandler(std::string action, std::function<void(Response response)> handler) {
+        void registerHandler(std::string action, std::function<Request(Response response)> handler) {
             _handlers.insert({action, handler});
         }
 

@@ -34,19 +34,11 @@ struct Response {
 
 class Server {
     protected:
-        Context _context;
-
         std::unordered_map<std::string, std::function<Response(Request request)>> _endpoints;
 
         void initialize() { configure(); }
 
-        Context context() {
-            return _context;
-        }
-
     private:
-        virtual void addClient(const std::string name, const int sockId) = 0;
-        
         Response executeEndpoint(std::string action, Request request) {
             auto fn = _endpoints.find(action);
             if (fn != _endpoints.end()) {
@@ -61,18 +53,17 @@ class Server {
         }
 
     public:
-        Server(Context& context) {
-            _context = context;
-        }
+        Server() { }
 
         virtual void configure() = 0;
+
+        virtual void addClient(const std::string name, const int sockId) = 0;
 
         void registerEndpoint(std::string action, std::function<Response(Request request)> handler) {
             _endpoints.insert({action, handler});
         }
 
         Response subscribe(Request request) {
-            addClient(request.sockName, request.sockId);
             return executeEndpoint(request.action, request);
         }
 };

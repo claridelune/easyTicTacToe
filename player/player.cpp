@@ -4,6 +4,12 @@ void PlayerClient::configure() {
     registerHandler("join", std::bind(&PlayerClient::onJoinResponse, this, std::placeholders::_1));
 }
 
-void PlayerClient::onJoinResponse(Response response) {
+Request PlayerClient::onJoinResponse(Response response) {
+    Request request;
+    
+    request.action = response.action;
+    
     logger->info("Join Response: " + response.message);
+
+    return request;
 }

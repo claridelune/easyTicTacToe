@@ -12,48 +12,94 @@ ServerManager::~ServerManager() {
 }
 
 void ServerManager::loop() {
+    int cliSock, maxSd, activity, 
+    srvSock = _socketServer->getIdentity();
+    sockaddr_in address = _socketServer->getAddress();
+    fd_set readfds;
+    std::set<int> acceptedClients;
+
     while(true) {
-        int socketId = _socketServer->accept();
-        // struct sockaddr_in  socketAddr;
-        // char socketIp[INET_ADDRSTRLEN];
-        // inet_ntop(AF_INET, &socketAddr.sin_addr, socketIp, INET_ADDRSTRLEN);
+        FD_ZERO(&readfds);
+        FD_SET(srvSock, &readfds);
+        maxSd = srvSock;
 
-        Request request;
-        Response response;
-
-        _socketServer->consumer(socketId, [&](char* buffer) {
-            _logger->info("REQUEST: " + std::string(buffer));
-            json payload = json::parse(buffer);
-            request.sockId = socketId;
-            request.sockRole = payload["credential"]["role"];
-            request.sockName = payload["credential"]["name"];
-            
-            request.action = payload["action"];
-            request.data = payload.value("data", json::object());
-        });
-            
-        auto srv = _servers.find(static_cast<Role>(request.sockRole));
-        if (srv != _servers.end()) {
-            response = srv->second->subscribe(request);
-            _socketServer->sender(socketId, [&]() -> std::string {
-                json jsonMeta = {
-                    {"action", response.action},
-                    {"message", response.message},
-                    {"data", response.data}
-                };
-    
-                std::string res = jsonMeta.dump();
-                _logger->info("RESPONSE: " + res);
-
-                return res;
-            });
+        _logger->info("Ingresando nueva conexion");
+        for (auto it = acceptedClients.begin(); it != acceptedClients.end(); ++it) {
+            int sd = *it;
+            if (sd > 0) FD_SET(sd, &readfds);
+            if (sd > maxSd) maxSd = sd;
         }
-        
 
-        
+        _logger->info("Iniciando seleccion");
+        activity = select(maxSd + 1, &readfds, NULL, NULL, NULL);
+        if ((activity < 0) && (errno != EINTR)) {
+            _logger->error("Error al seleccionar");
+        }
 
-        // _socketServer->close(socketId);
+        if (FD_ISSET(srvSock, &readfds)) {
+            int newSock = _socketServer->accept();
+            // ntohs(address.sin_port)
+            _logger->info("New Connection, socket fs is " + std::to_string(newSock) + ", IP is: " + std::string(inet_ntoa(address.sin_addr)));
+            acceptedClients.insert(newSock);
+        }
+
+        _logger->info("Buscando conexion para request and response");
+        for (auto it = acceptedClients.begin(); it != acceptedClients.end();) {
+            int sd = *it;
+            
+            _logger->info("Estableciendo conexion con: " + std::to_string(sd));
+
+            if (FD_ISSET(sd, &readfds)) {  
+                Request request;
+                Response response;
+
+                _logger->info("Iniciando consumer and sender con: " + std::to_string(sd));
+
+                int valread = _socketServer->consumer(sd, [&](char* buffer) {
+                    _logger->info("REQUEST: " + std::string(buffer));
+                    json payload = json::parse(buffer);
+                    request.sockId = sd;
+                    request.sockRole = payload["credential"]["role"];
+                    request.sockName = payload["credential"]["name"];
+                    
+                    request.action = payload["action"];
+                    request.data = payload.value("data", json::object());
+                });
+
+                if (valread == 0) {
+                    getpeername(sd, (struct sockaddr *)&address, (socklen_t *)sizeof(address));
+                    std::cout << "Host desconectado, IP: " << inet_ntoa(address.sin_addr) << ", puerto: " << ntohs(address.sin_port) << std::endl;
+                    _socketServer->close(sd);
+                    it = acceptedClients.erase(it); 
+                } else {
+                    auto srv = _servers.find(static_cast<Role>(request.sockRole));
+                    if (srv != _servers.end()) {
+                        srv->second->addClient(request.sockName, request.sockId);
+                        response = srv->second->subscribe(request);
+
+                        _socketServer->sender(sd, [&]() -> std::string {
+                            json jsonMeta = {
+                                {"action", response.action},
+                                {"message", response.message},
+                                {"data", response.data}
+                            };
+            
+                            std::string res = jsonMeta.dump();
+                            _logger->info("RESPONSE: " + res);
+
+                            return res;
+                        });
+                    }
+
+                    ++it;
+                }
+            } else {
+                ++it;
+            }
+        }
     }
+
+    _socketServer->close(srvSock);
 }
 
 void ServerManager::flush() {}

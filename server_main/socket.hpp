@@ -31,9 +31,10 @@ class Socket {
 
         void configure();
         int getIdentity();
+        sockaddr_in getAddress();
 
         int accept();
-        void consumer(const int socketId, const std::function<void(char* buffer)> handler);
+        int consumer(const int socketId, const std::function<void(char* buffer)> handler);
         void sender(const int socketId, const std::function<const std::string()> handler);
         int close(int socketId);
 };

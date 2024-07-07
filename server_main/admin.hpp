@@ -4,21 +4,27 @@
 #include "server.hpp"
 #include "admin.hpp"
 
+#include <iostream>
+
 class AdminServer : public Server {
     private:
-        void addClient(const std::string name, const int sockId) override {
-            auto records = context().connectedAdmins;
-            auto admin = records.find(name);
-            if (admin == records.end())
-                records.insert({ name, sockId });
+        Context& _context;
+
+        Context& context() {
+            return _context;
         }
 
     public:
-        AdminServer(Context& context): Server(context) { 
+        AdminServer(Context& context): _context(context) { 
             initialize(); 
         }
 
         void configure() override;
+
+        void addClient(const std::string name, const int sockId) override {
+            Context& ctx = context();
+            ctx.connectedAdmins[name] = sockId;
+        }
 
         Response start(Request request);
         Response next(Request request);

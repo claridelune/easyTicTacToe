@@ -4,6 +4,11 @@
 #include <vector>
 #include <unordered_map>
 #include <functional>
+#include <set>
+#include <sys/select.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 #include "logger.hpp"
 #include "socket.hpp"

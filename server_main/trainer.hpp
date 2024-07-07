@@ -9,15 +9,14 @@ class TrainerServer : public Server {
     private:
         Config* _config;
 
-        void addClient(const std::string name, const int sockId) override {
-            auto records = context().connectedTrainers;
-            auto trainer = records.find(name);
-            if (trainer == records.end())
-                records.insert({ name, sockId });
+        Context& _context;
+
+        Context& context() {
+            return _context;
         }
 
     public:
-        TrainerServer(Context& context): Server(context) { 
+        TrainerServer(Context& context) : _context(context) { 
             initialize();
             _config = new Config();
         }
@@ -27,6 +26,11 @@ class TrainerServer : public Server {
         }
 
         void configure() override;
+
+        void addClient(const std::string name, const int sockId) override {
+            Context& ctx = context();
+            ctx.connectedTrainers[name] = sockId;
+        }
 
         Response join(Request request);
         Response predict(Request request);
