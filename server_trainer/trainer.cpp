@@ -1,7 +1,7 @@
 #include "trainer.hpp"
 
 void TrainerClient::configure() {
-    registerHandler("join", std::bind(&TrainerClient::onJoinResponse, this, std::placeholders::_1));
+    registerVoidHandler("join", std::bind(&TrainerClient::onJoinResponse, this, std::placeholders::_1));
 }
 
 void TrainerClient::onJoinResponse(Response response) {
