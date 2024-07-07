@@ -1,5 +1,9 @@
 #include "socket.hpp"
 
+Socket::Socket() {
+    _logger = new Logger("Socket");
+}
+
 Socket::Socket(const size_t port) {
     _socketAddr.sin_family = AF_INET;
     _socketAddr.sin_port = htons(port); 
@@ -18,6 +22,14 @@ Socket::Socket(const std::string& ip, const size_t port) {
 
 Socket::~Socket() {
     delete _logger;
+}
+
+void Socket::initialize(const size_t port, std::optional<std::string> ip) {
+    in_addr_t ipAddress = ip.has_value() ? inet_addr(ip->c_str()) : INADDR_ANY;
+
+    _socketAddr.sin_family = AF_INET;
+    _socketAddr.sin_port = htons(port); 
+    _socketAddr.sin_addr.s_addr = ipAddress; 
 }
 
 int Socket::getIdentity() {

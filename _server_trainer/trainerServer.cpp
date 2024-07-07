@@ -11,7 +11,7 @@ void TrainerServer::configure() {
         int clientSocket = serverSocket->accept();
         clientSockets.push_back(clientSocket);
 
-        serverSocket->consumer(clientSocket, [&](char* buffer) {
+        serverSocket->consumer(clientSocket, [&](std::string buffer) {
             auto payload = nlohmann::json::parse(buffer);
             if (payload["action"] == "weights") {
                 auto weights = payload["data"].get<std::vector<float>>();

@@ -3,7 +3,7 @@
 #include "serverState.hpp"
 
 TrainerClient::TrainerClient(const std::string &ip, const size_t port, Logger *logger)
-    : Client(ip, port, logger), currentState(new ClientState()), _port(port) {
+    : Client(ip, port, logger), _port(port) {
     initialize();
     _uuid = uuid();
 }
@@ -29,15 +29,29 @@ void TrainerClient::loop() {
     }
 }
 
-void TrainerClient::updateConfiguration(Response response) {
-    currentState->handleConfig(this, response.data.dump());
+Request TrainerClient::updateConfiguration(Response response) {
+    Request request;
+    
+    request.action = response.action;
+
+    logger->info("updateConfiguration Response: " + response.message);
+
+    return request;
+    // currentState->handleConfig(this, response.data.dump());
 }
 
-void TrainerClient::startTraining(Response response) {
-    currentState->handleAction(this, response.action);
+Request TrainerClient::startTraining(Response response) {
+    Request request;
+    
+    request.action = response.action;
+
+    logger->info("startTraining Response: " + response.message);
+
+    return request;
+    // currentState->handleAction(this, response.action);
 }
 
-void TrainerClient::setState(State* state) {
-    delete currentState;
-    currentState = state;
-}
+// void TrainerClient::setState(State* state) {
+//     delete currentState;
+//     currentState = state;
+// }

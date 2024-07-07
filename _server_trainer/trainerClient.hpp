@@ -3,7 +3,7 @@
 
 #include "../shared/client.hpp"
 #include "../shared/utils.hpp"
-#include "state.hpp"
+// #include "state.hpp"
 #include "trainerServer.hpp"
 
 #include <memory>
@@ -15,16 +15,18 @@ class TrainerClient : public Client {
 public:
     TrainerClient(const std::string& ip, const size_t port, Logger* logger);
     void configure() override;
-    void updateConfiguration(Response response);
-    void startTraining(Response response);
+    
+    Request updateConfiguration(Response response);
+    Request startTraining(Response response);
+
     void loop();
 
-    void setState(State* state);
+    // void setState(State* state);
 
     std::string _uuid;
     std::string currentLeaderIP;
 
-    State* currentState;
+    // State* currentState;
     std::unique_ptr<Socket> tcpHandler;
     std::unique_ptr<TrainerServer> server;
     size_t _port;

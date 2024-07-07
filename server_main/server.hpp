@@ -21,7 +21,6 @@ struct Request {
     int sockId;
     int sockRole;
     std::string sockName;
-
     std::string action;
     json data;
 };

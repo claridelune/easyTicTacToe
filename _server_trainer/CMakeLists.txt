@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.28)
 
 set(SOURCES
+    trainerClient.cpp
+    trainerServer.cpp
     main.cpp
-    client.cpp
-    server.cpp
-    manager.cpp
 )
+
+# add_subdirectory(../shared)
 
 add_executable(serverTrainer ${SOURCES})
 target_include_directories(serverTrainer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
