@@ -11,6 +11,7 @@
 #include <sys/socket.h> 
 #include <unistd.h> 
 #include <stdexcept>
+#include <optional>
 
 #include "utils.hpp"
 #include "logger.hpp"
@@ -31,10 +32,12 @@ class Socket {
         Logger* _logger;
 
     public:
+        Socket();
         Socket(const size_t port);
         Socket(const std::string& ip, const size_t port);
         ~Socket();
 
+        void initialize(const size_t port, std::optional<std::string> ip);
         void configureServer();
         void configureClient();
         
