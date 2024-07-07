@@ -77,18 +77,18 @@ void ServerManager::loop() {
                         srv->second->addClient(request.sockName, request.sockId);
                         response = srv->second->subscribe(request);
 
-                        _socketServer->sender(sd, [&]() -> std::string {
-                            json jsonMeta = {
-                                {"action", response.action},
-                                {"message", response.message},
-                                {"data", response.data}
-                            };
-            
-                            std::string res = jsonMeta.dump();
-                            _logger->info("RESPONSE: " + res);
+                        if (response.action != "void") {
+                            _socketServer->sender(sd, [&]() -> std::string {
+                                json jsonMeta = {{"action", response.action},
+                                                {"message", response.message},
+                                                {"data", response.data}};
 
-                            return res;
-                        });
+                                std::string res = jsonMeta.dump();
+                                _logger->info("RESPONSE: " + res);
+
+                                return res;
+                          });
+                        }
                     }
 
                     ++it;

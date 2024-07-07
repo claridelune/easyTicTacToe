@@ -4,8 +4,6 @@ void TrainerServer::configure() {
     registerEndpoint("join", std::bind(&TrainerServer::join, this, std::placeholders::_1));
     registerEndpoint("predict", std::bind(&TrainerServer::predict, this, std::placeholders::_1));
     registerEndpoint("keepAlive", std::bind(&TrainerServer::handleKeepAlive, this, std::placeholders::_1));
-    registerEndpoint("start", std::bind(&TrainerServer::handleKeepAlive, this, std::placeholders::_1));
-    registerEndpoint("continue", std::bind(&TrainerServer::handleKeepAlive, this, std::placeholders::_1));
 }
 
 void TrainerServer::run() {
@@ -18,7 +16,7 @@ void TrainerServer::stop() {
 }
 void TrainerServer::keepAlive() {
     while (_isRunning) {
-        sleep(5);
+        sleep(10);
 
         auto now = std::chrono::steady_clock::now();
         for (auto it = _context.connectedTrainers.begin(); it != _context.connectedTrainers.end();) {
@@ -26,17 +24,17 @@ void TrainerServer::keepAlive() {
             int sockId = it->second;
 
             _context.sender(sockId, [&]() -> std::string {
-                    return R"(
-                        {
-                          "action": "keepAlive",
-                          "message": "Keep Alive"
-                        }
-                    )";
+                    json response = {
+                        {"action", "keepAlive"},
+                        {"message", "Are you alive?"}
+                    };
+                    std::string res = response.dump();
+                    return res;
             });
 
             auto lastResponseTime = _lastKeepAliveResponse[trainerName];
             auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - lastResponseTime).count();
-            if (duration > 10) {
+            if (duration > 20) {
                 std::cout << "Trainer disconnected: " << trainerName << std::endl;
                 _context.connectedTrainers.erase(it++);
                 reassignLeader();
@@ -89,9 +87,7 @@ Response TrainerServer::join(Request request) {
 
     sendConfiguration();
 
-    response.action = request.action;
-    response.message = "Join successful.";
-
+    response.action = "void";
     return response;
 }
 
@@ -108,8 +104,7 @@ Response TrainerServer::handleKeepAlive(Request request) {
     Response response;
     _lastKeepAliveResponse[request.sockName] = std::chrono::steady_clock::now();
 
-    response.action = request.action;
-    response.message = "Keep alive acknowledged";
+    response.action = "void";
 
     return response;
 }
