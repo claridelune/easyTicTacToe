@@ -12,25 +12,28 @@
 #include "../shared/logger.hpp"
 #include "../shared/socket.hpp"
 
+#define TRAINER_ROLE 3
+#define RESPONSE_VOID "void"
+
 using json = nlohmann::json;
 
 struct Request {
-    int sockId;
-    int sockRole;
-    std::string sockName;
+    std::string action;
+    json data;
+};
+
+struct Response {
+       // int sockId;
+    // int sockRole;
+    // std::string sockName;
     
     std::string action;
     json credential;
     json data;
 };
 
-struct Response {
-    std::string action;
-    std::string message;
-    json data;
-};
-
 struct ProcessorOpts {
+    std::string uid;
     std::string ipAddress;
     int port;
 };
@@ -40,7 +43,7 @@ class TrainerProcessor {
         Socket* _socket;
         ProcessorOpts _options;
 
-        std::unordered_map<std::string, std::variant<std::function<void(Request request)>, std::function<Response(Request request)>>> _endpoints;
+        std::unordered_map<std::string, std::variant<std::function<void(Request)>, std::function<Response(Request)>>> _endpoints;
 
         void setOptions(ProcessorOpts opts) {
             _options = opts;
@@ -56,7 +59,7 @@ class TrainerProcessor {
                     using T = std::decay_t<decltype(fn)>;
                     if constexpr (std::is_same_v<T, std::function<void(Request)>>) {
                         fn(request);
-                        return { action, "Action completed.", json() };
+                        return { RESPONSE_VOID, "Action completed.", json() };
                     } else if constexpr (std::is_same_v<T, std::function<Response(Request)>>) {
                         return fn(request);
                     }
@@ -75,22 +78,46 @@ class TrainerProcessor {
 
         virtual void initialize() = 0;
         virtual void configure() = 0;
-        void send(std::string b) {
+
+        void registerEndpoint(const std::string action, std::function<Response(Request)> handler) {
+            _endpoints.insert({action, handler});
+        }
+
+        void registerVoidEndpoint(const std::string action, std::function<void(Request)> handler) {
+            _endpoints.insert({action, handler});
+        }
+
+        Response subscribe(Request request) {
+            return executeEndpoint(request.action, request);
+        }
+
+        void send(Response response) {
             int sockId = _socket->getIdentity();
             _socket->sender(sockId, [&]() -> std::string {
-                return b;
+                json jsonMeta = {
+                    {"action", response.action},
+                    {"credential", {
+                        {"role", TRAINER_ROLE},
+                        {"name", _options.uid}
+                    }},
+                    {"data", response.data}
+                };
+                
+                std::string res = jsonMeta.dump();
+                return res;
             });
         }
-        std::string receive() {
+
+        Request receive() {
             int sockId = _socket->getIdentity();
-
-            std::string result;
-
+            Request req;
             _socket->consumer(sockId, [&](std::string buffer) {
-                result = buffer;
+                json payload = json::parse(buffer);
+                req.action = payload["action"];
+                req.data = payload.value("data", json::object());
             });
 
-            return result;
+            return req;
         }
 };
 

@@ -1,27 +1,24 @@
 #include "manager.hpp"
+
 #include <iostream>
 
 void ServerManager::loop() {
     _client->initialize();
 
-    json jsonMeta = {
-        {"action", "join"},
-        {"credential", {
-            {"role", 3},
-            {"name", "aasdadasdas"}
-        }}
+    Response frsReq {
+        "join"
     };
 
-    std::string req = jsonMeta.dump();
-
-    _client->send(req);
-    std::string res = _client->receive();
-
-    std::cout << res << std::endl;
+    _client->send(frsReq);
 
     while(true) {
-        std::string res = _client->receive();
-        std::cout << "ITERATOR: " << res << std::endl;
+        Request req = _client->receive();
+        Response res = _client->subscribe(req);
+
+        if (res.action == RESPONSE_VOID)
+            continue;
+
+        _client->send(res);
     }
 }
 

@@ -13,6 +13,10 @@ class TrainerClient : public TrainerProcessor {
 
         void initialize() override;
         void configure() override;
+
+        void config(Request req);
+        Response predict(Request req);
+        Response keepAlive(Request req);
 };
 
 #endif

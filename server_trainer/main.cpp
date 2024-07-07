@@ -5,8 +5,10 @@
 
 #include "../shared/logger.hpp"
 #include "../shared/socket.hpp"
+#include "../shared/utils.hpp"
 
 ProcessorOpts clientOpts {
+    uuid(),
     "127.0.0.1",
     4490
 };
