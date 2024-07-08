@@ -61,7 +61,7 @@ int main() {
         data.push_back(resp.substr(5, 10));
     }
 
-    /* Logger* logger = new Logger("ServerTrainer");
+    Logger* logger = new Logger("ServerTrainer");
     Socket* socket = new Socket();
     TrainerClient* client = new TrainerClient(socket, clientOpts);
     TrainerServer* server = new TrainerServer(socket);
@@ -76,5 +76,5 @@ int main() {
     delete server;
     delete client;
     delete socket;
-    delete logger; */
+    delete logger;
 };

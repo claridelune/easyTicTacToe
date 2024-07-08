@@ -2,7 +2,6 @@
 
 void TrainerServer::configure() {
     registerEndpoint("join", std::bind(&TrainerServer::join, this, std::placeholders::_1));
-    registerEndpoint("predict", std::bind(&TrainerServer::predict, this, std::placeholders::_1));
     registerEndpoint("keepAlive", std::bind(&TrainerServer::handleKeepAlive, this, std::placeholders::_1));
 }
 
@@ -88,15 +87,6 @@ Response TrainerServer::join(Request request) {
     sendConfiguration();
 
     response.action = "void";
-    return response;
-}
-
-Response TrainerServer::predict(Request request) {
-    Response response;
-
-    response.action = request.action;
-    response.message = "Data was uploaded correctly.";
-
     return response;
 }
 
