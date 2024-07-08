@@ -41,8 +41,5 @@ Response PlayerServer::predict(Request request) {
         return response;
     }
 
-    response.message = "Mi prediccion nunca falla >:V";
-    response.data = {{"move", 4}};
-
     return response;
 }

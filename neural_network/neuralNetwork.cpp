@@ -139,8 +139,8 @@ void NeuralNetwork::run(std::vector < std::vector < double >> data_train,
   }
 }
 
-int NeuralNetwork::predict(const std::vector < double > & x) {
+std::vector<double> NeuralNetwork::predict(const std::vector < double > & x) {
   std::vector < double > z1, a1, z2, a2;
   forward(x, z1, a1, z2, a2);
-  return std::distance(a2.begin(), std::max_element(a2.begin(), a2.end()));
+  return a2;
 }

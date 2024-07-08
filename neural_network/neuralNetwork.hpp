@@ -21,7 +21,7 @@ public:
   void forward(const std::vector<double> &x, std::vector<double> &z1,
                std::vector<double> &a1, std::vector<double> &z2,
                std::vector<double> &a2);
-  int predict(const std::vector<double> &x);
+  std::vector<double> predict(const std::vector<double> &x);
 
   std::mt19937 gen;
   std::vector<std::vector<double>> W1;

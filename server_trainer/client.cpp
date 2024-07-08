@@ -1,4 +1,5 @@
 #include "client.hpp"
+#include <algorithm>
 
 void TrainerClient::initialize() { 
     configure();
@@ -84,11 +85,30 @@ void TrainerClient::join(Request req) {
 
 Response TrainerClient::predict(Request req) {
     Response res;
-    auto board = req.data;
-    // int move = _nn->predict(board);
+    std::string board = req.data["board"];
+    auto moves = _nn->predict(dataHandler.getBoard(board));
+
+    std::vector<int> ind(moves.size());
+    for (int i = 0; i < ind.size(); i++)
+    {
+        ind[i] = i;
+    }
+    sort(ind.begin(), ind.end(), [&moves](int x, int y) {
+        return moves[x] > moves[y];
+    });
+
+    int move = -1;
+    for (auto i : ind)
+    {
+        if (board[i] == '0')
+        {
+            move = i;
+            break;
+        }
+    }
 
     res.action = req.action;
-    res.data = {"move", 3};
+    res.data = {{"move", move}};
     return res;
 }
 
