@@ -62,9 +62,13 @@ void Socket::configureClient() {
         throw std::runtime_error("Error creating socket.");
 }
 
-void Socket::connectToServer() {
-    if (connect(_socketId, (struct sockaddr *)&_socketAddr, sizeof(_socketAddr)) == SOCKET_ERROR)
-        throw std::runtime_error("Error connecting to server.");
+bool Socket::connectToServer() {
+    try {
+        if (connect(_socketId, (struct sockaddr *)&_socketAddr, sizeof(_socketAddr)) == SOCKET_ERROR)
+            throw std::runtime_error("Error connecting to server.");
+
+        return true;
+    } catch(const std::runtime_error &e) { return false; }
 }
 
 int Socket::accept() {

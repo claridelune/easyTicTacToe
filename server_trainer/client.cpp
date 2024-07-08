@@ -29,25 +29,50 @@ void TrainerClient::config(Request req) {
         }
     }
 
-    // if (isLeader) {
-    //     _requiredServerInstance = true;
-    //     _requiredServerInstanceFirstTime = true;
-    //     _requiredDisposed = false;
+    int extraPort = opts.port + 1;
 
-    //     int serverPort = opts.port + 1;
+    if (isLeader) {
+        _requiredServerInstance = true;
+        _requiredServerInstanceFirstTime = true;
+        _requiredServerDisposed = false;
 
-    //     ProcessorOpts extraOpts {
-    //         opts.uid,
-    //         opts.ipAddress,
-    //         serverPort
-    //     };
+        ProcessorOpts extraOpts {
+            opts.uid,
+            opts.ipAddress,
+            extraPort
+        };
 
-    //     setExtraOptions(extraOpts);
-    // } else {
-    //     _requiredServerInstance = false;        
-    //     _requiredServerInstanceFirstTime = false;
-    //     _requiredDisposed = true;
-    // }
+        setExtraServerOptions(extraOpts);
+    } else {
+        _requiredServerInstance = false;        
+        _requiredServerInstanceFirstTime = false;
+        _requiredServerDisposed = true;
+
+        ProcessorOpts extraOpts {
+            opts.uid,
+            opts.ipAddress,
+            extraPort
+        };
+
+         if (_extraClientSocket == nullptr) {
+            _extraClientSocket = new Socket();
+            _extraClientSocket->initialize(extraOpts.port, extraOpts.ipAddress);
+            _extraClientSocket->configureClient();
+         }
+
+        bool isConnected = false;
+
+        do {
+            std::cout << "INTENTANDO CONEXION AL SERVER" << std::endl;
+            usleep(5000 * 1000);
+            isConnected = _extraClientSocket->connectToServer();            
+        }while(!isConnected);
+            
+        std::cout << "CONEXION AL SERVER CORRECTO" << std::endl;
+
+        Response res = { "join" };
+        send(res, _extraClientSocket);
+    }
 }
 
 void TrainerClient::join(Request req) {

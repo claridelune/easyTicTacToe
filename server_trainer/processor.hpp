@@ -20,12 +20,16 @@
 using json = nlohmann::json;
 
 struct Request {
+    int sockId;
+    std::string sockName;
+    
     std::string action;
     json data;
 };
 
 struct Response {
     std::string action;
+    std::string message;
     json credential;
     json data;
 };
@@ -75,6 +79,9 @@ class TrainerProcessor {
         virtual void initialize() = 0;
         virtual void configure() = 0;
 
+        virtual void send(Response response, Socket* socket = nullptr) = 0;
+        virtual Request receive(Socket* socket = nullptr) = 0;
+
         int getSockId() { return _socket->getIdentity(); }
         void setSockId(int sockId) { _socket->setIdentity(sockId); }
         void closeSock(int sockId) { _socket->close(sockId);  }
@@ -92,35 +99,6 @@ class TrainerProcessor {
 
         Response subscribe(Request request) {
             return executeEndpoint(request.action, request);
-        }
-
-        void send(Response response) {
-            int sockId = _socket->getIdentity();
-            _socket->sender(sockId, [&]() -> std::string {
-                json jsonMeta = {
-                    {"action", response.action},
-                    {"credential", {
-                        {"role", TRAINER_ROLE},
-                        {"name", _options.uid}
-                    }},
-                    {"data", response.data}
-                };
-                
-                std::string res = jsonMeta.dump();
-                return res;
-            });
-        }
-
-        Request receive() {
-            int sockId = _socket->getIdentity();
-            Request req;
-            _socket->consumer(sockId, [&](std::string buffer) {
-                json payload = json::parse(buffer);
-                req.action = payload["action"];
-                req.data = payload.value("data", json::object());
-            });
-
-            return req;
         }
 };
 

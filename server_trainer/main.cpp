@@ -18,11 +18,12 @@ ProcessorOpts clientOpts {
 
 int main() {
     Logger* logger = new Logger("ServerTrainer");
-    Socket* socket = new Socket();
+    Socket* socketClient = new Socket();
+    Socket* socketServer = new Socket();
     NeuralNetwork* nn = new NeuralNetwork(9, 3, 9, 30, 0.01); 
-
-    TrainerClient* client = new TrainerClient(socket, nn,clientOpts);
-    TrainerServer* server = new TrainerServer(socket, nn);
+   
+    TrainerClient* client = new TrainerClient(socketClient, nn, clientOpts);
+    TrainerServer* server = new TrainerServer(socketServer, nn);
     UDPTalker* talker = new UDPTalker(2, IP, UDP_PORT, &evaluateDatum);
 
     ServerManager* manager = new ServerManager(client, server, talker);
@@ -35,6 +36,7 @@ int main() {
     delete server;
     delete client;
     delete talker;
-    delete socket;
+    delete socketServer;
+    delete socketClient;
     delete logger;
 };

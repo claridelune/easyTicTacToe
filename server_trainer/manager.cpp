@@ -26,28 +26,34 @@ void ServerManager::stopServer() {
 }
 
 void ServerManager::loopServer() {
-    auto& opts = _client->getExtraOptions();
+    auto& opts = _client->getExtraServerOptions();
     _server->setOptions(opts);
     _server->initialize();
 
     while(!_stopServer) {
-        std::cout << "Soy el server y estoy vivo!" << std::endl;
         Request req = _server->receive();
+        if (req.action.empty()) continue;
+
         Response res = _server->subscribe(req);
+        
+        if (res.action == RESPONSE_VOID)
+            continue;
+
+        _server->send(res);
     }
 }
 
 void ServerManager::loop() {
     _client->initialize();
 
-    Response frsReq {
-        "join"
-    };
+    Response frsReq { "join" };
 
     _client->send(frsReq);
 
     while(true) {
         Request req = _client->receive();
+        if (req.action.empty()) continue;
+
         Response res = _client->subscribe(req);
 
         if (_client->receiveData()) {
@@ -60,7 +66,7 @@ void ServerManager::loop() {
         if (
             _client->requiredServerInstance() && 
             _client->requiredServerInstanceFirstTime() && 
-            !_client->requiredDisposed()
+            !_client->requiredServerDisposed()
         ) {
             std::cout << "START SERVER" << std::endl;
             startServer();
@@ -68,10 +74,10 @@ void ServerManager::loop() {
             _client->setRequiredServerInstance(false);
         }
 
-        if (_client->requiredDisposed()) {
+        if (_client->requiredServerDisposed()) {
             std::cout << "STOP SERVER" << std::endl;
             stopServer();
-            _client->setRequiredDisposed(false);
+            _client->setRequiredServerDisposed(false);
         }
 
         if (res.action == RESPONSE_VOID)
