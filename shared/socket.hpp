@@ -42,6 +42,7 @@ class Socket {
         void configureClient();
         
         int getIdentity();
+        void setIdentity(int sockId);
         sockaddr_in getAddress();
 
         int accept();

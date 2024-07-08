@@ -2,6 +2,9 @@
 #define SERVER_TRAINER_MANAGER_H
 
 #include <functional>
+#include <thread>
+#include <atomic>
+#include <chrono>
 
 #include <nlohmann/json.hpp>
 
@@ -10,37 +13,27 @@
 
 class ServerManager {
     private:
+        std::atomic<bool> _stopServer;
+        std::unique_ptr<std::thread> _runningServer;
+
         TrainerClient* _client;
         TrainerServer* _server;
 
+        void startServer();
+        void stopServer();
+        void loopServer();
         void loop();
 
     public:
-        ServerManager(TrainerClient* client, TrainerServer* server) : _client(client), _server(server) { }
-        ~ServerManager() { }
+        ServerManager(TrainerClient* client, TrainerServer* server) :
+        _client(client), 
+        _server(server), 
+        _stopServer(false) , 
+        _runningServer(nullptr) { }
 
-        // void connect() {
-        //     int sockId = _socketServer->getIdentity();
-
-        //     json jsonMeta = {
-        //         {"action", "join"},
-        //         {"credential": {
-        //             {"role": 3},
-        //             {"name": "aasdadasdas"}
-        //         }},
-        //     };
-
-        //     _socket->sender(sockId, [&]() -> std::string {                
-        //         std::string res = jsonMeta.dump();
-        //         _logger->info("RESPONSE: " + res);
-
-        //         return res;
-        //     });
-
-        //     _socket->consumer(sockId, [&](std::string buffer) {
-        //         _logger->info("REQUEST: " + buffer);
-        //     });
-        // }
+        ~ServerManager() {
+            stopServer();
+         }
 
         void run(std::function<void()> handler);
 };

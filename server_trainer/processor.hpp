@@ -23,10 +23,6 @@ struct Request {
 };
 
 struct Response {
-       // int sockId;
-    // int sockRole;
-    // std::string sockName;
-    
     std::string action;
     json credential;
     json data;
@@ -44,13 +40,6 @@ class TrainerProcessor {
         ProcessorOpts _options;
 
         std::unordered_map<std::string, std::variant<std::function<void(Request)>, std::function<Response(Request)>>> _endpoints;
-
-        void setOptions(ProcessorOpts opts) {
-            _options = opts;
-        }
-        ProcessorOpts& getOptions() {
-            return _options;
-        }
 
         Response executeEndpoint(std::string action, Request request) {
             auto fn = _endpoints.find(action);
@@ -78,6 +67,13 @@ class TrainerProcessor {
 
         virtual void initialize() = 0;
         virtual void configure() = 0;
+
+        int getSockId() { return _socket->getIdentity(); }
+        void setSockId(int sockId) { _socket->setIdentity(sockId); }
+        void closeSock(int sockId) { _socket->close(sockId);  }
+
+        void setOptions(ProcessorOpts opts) { _options = opts; }
+        ProcessorOpts& getOptions() { return _options; }
 
         void registerEndpoint(const std::string action, std::function<Response(Request)> handler) {
             _endpoints.insert({action, handler});

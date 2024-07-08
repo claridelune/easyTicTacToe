@@ -1,6 +1,6 @@
 #include "socket.hpp"
 
-Socket::Socket() {
+Socket::Socket(): _socketId(-1) {
     _logger = new Logger("Socket");
 }
 
@@ -34,6 +34,10 @@ void Socket::initialize(const size_t port, std::optional<std::string> ip) {
 
 int Socket::getIdentity() {
     return _socketId;
+}
+
+void Socket::setIdentity(int sockId) {
+    _socketId = sockId;
 }
 
 sockaddr_in Socket::getAddress() {
