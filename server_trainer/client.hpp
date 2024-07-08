@@ -4,6 +4,7 @@
 #include "processor.hpp"
 
 #include "../shared/socket.hpp"
+#include "../neural_network/neuralNetwork.hpp"
 
 class TrainerClient : public TrainerProcessor {
     private:
@@ -12,13 +13,12 @@ class TrainerClient : public TrainerProcessor {
         bool _requiredServerInstance;
         bool _requiredDisposed;
         bool _requiredServerInstanceFirstTime;
+        bool _receiveData = false;
+
 
     public:
-        bool receiveData;
-
-        TrainerClient(Socket* socket, ProcessorOpts& opts): TrainerProcessor(socket) {
+        TrainerClient(Socket* socket, NeuralNetwork *nn, ProcessorOpts& opts): TrainerProcessor(socket, nn) {
             setOptions(opts);
-            receiveData = false;
         }  
 
         ProcessorOpts& getExtraOptions() { return _extraOptions; }
@@ -27,10 +27,12 @@ class TrainerClient : public TrainerProcessor {
         bool requiredServerInstance() { return _requiredServerInstance;}
         bool requiredDisposed() { return _requiredDisposed; }
         bool requiredServerInstanceFirstTime() { return _requiredServerInstanceFirstTime; }
+        bool receiveData() { return _receiveData; }
 
         void setRequiredServerInstance(bool v) { _requiredServerInstance = v;}
         void setRequiredDisposed(bool v) { _requiredDisposed = v; }
         void setRequiredServerInstanceFirstTime(bool v) { _requiredServerInstanceFirstTime = v; }
+        void setReceiveData(bool v) { _receiveData = v; }
 
         void initialize() override;
         void configure() override;
@@ -38,8 +40,11 @@ class TrainerClient : public TrainerProcessor {
         void config(Request req);
         void join(Request req);
         void data(Request req);
+        void train(Request req);
         Response predict(Request req);
         Response keepAlive(Request req);
+
+        void initializeTrainingData(std::vector<std::string>& data);
 };
 
 #endif

@@ -50,7 +50,11 @@ void ServerManager::loop() {
         Request req = _client->receive();
         Response res = _client->subscribe(req);
 
-        if (_client->receiveData) {
+        if (_client->receiveData()) {
+            std::thread dataThread([&]() {
+                receiveData();
+            });
+            dataThread.detach();
         }
 
         if (
@@ -95,6 +99,8 @@ void ServerManager::receiveData()
         
         data.push_back(resp.substr(5, 10));
     }
+    _client->initializeTrainingData(data);
+    _client->setReceiveData(false);
 }
 
 void ServerManager::run(std::function<void()> handler) {

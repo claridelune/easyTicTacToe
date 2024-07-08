@@ -11,6 +11,8 @@
 
 #include "../shared/logger.hpp"
 #include "../shared/socket.hpp"
+#include "../neural_network/neuralNetwork.hpp"
+#include "../neural_network/dataHandler.hpp"
 
 #define TRAINER_ROLE 3
 #define RESPONSE_VOID "void"
@@ -38,6 +40,11 @@ class TrainerProcessor {
     protected:
         Socket* _socket;
         ProcessorOpts _options;
+        NeuralNetwork* _nn;
+        DataHandler dataHandler;
+
+        std::vector<std::vector<double>> train_data;
+        std::vector<int> train_labels;
 
         std::unordered_map<std::string, std::variant<std::function<void(Request)>, std::function<Response(Request)>>> _endpoints;
 
@@ -63,7 +70,7 @@ class TrainerProcessor {
         }
 
     public:
-        TrainerProcessor(Socket* socket) : _socket(socket) {}
+        TrainerProcessor(Socket* socket, NeuralNetwork* nn) : _socket(socket), _nn(nn) {}
 
         virtual void initialize() = 0;
         virtual void configure() = 0;

@@ -86,7 +86,7 @@ Response TrainerServer::join(Request request) {
 
     sendConfiguration();
 
-    response.action = "void";
+    response.action = "data";
     return response;
 }
 

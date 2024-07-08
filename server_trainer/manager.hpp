@@ -8,9 +8,6 @@
 
 #include <nlohmann/json.hpp>
 
-#include "../neural_network/dataHandler.hpp"
-#include "../neural_network/neuralNetwork.hpp"
-
 #define IP "127.0.0.1"
 #define UDP_PORT 7490
 
@@ -41,7 +38,7 @@ class ServerManager {
         _server(server), 
         talker(udp),
         _stopServer(false), 
-        _runningServer(nullptr) { }
+        _runningServer(nullptr) {}
 
         ~ServerManager() {
             stopServer();

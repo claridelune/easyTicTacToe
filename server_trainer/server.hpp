@@ -4,10 +4,11 @@
 #include "processor.hpp"
 
 #include "../shared/socket.hpp"
+#include "../neural_network/neuralNetwork.hpp"
 
 class TrainerServer : public TrainerProcessor {
     public:
-        TrainerServer(Socket* socket): TrainerProcessor(socket) {}
+        TrainerServer(Socket* socket, NeuralNetwork* nn): TrainerProcessor(socket, nn) {}
 
         void initialize() override;
         void configure() override;
