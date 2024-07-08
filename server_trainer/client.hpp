@@ -18,6 +18,8 @@ class TrainerClient : public TrainerProcessor {
         bool _requiredServerInstance;
         bool _requiredServerInstanceFirstTime;
         bool _requiredServerDisposed;
+
+        bool _isConnectedToServer;
         bool _receiveData = false;
 
 

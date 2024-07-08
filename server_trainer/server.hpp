@@ -47,6 +47,7 @@ class TrainerServer : public TrainerProcessor {
         }
 
         void join(Request req);
+        Response train(Request req);
 };
 
 #endif

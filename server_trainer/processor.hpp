@@ -24,6 +24,7 @@ struct Request {
     std::string sockName;
     
     std::string action;
+    std::string message;
     json data;
 };
 

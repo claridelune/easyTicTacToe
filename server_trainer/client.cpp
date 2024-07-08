@@ -60,13 +60,13 @@ void TrainerClient::config(Request req) {
             _extraClientSocket->configureClient();
          }
 
-        bool isConnected = false;
+        _isConnectedToServer = false;
 
         do {
             std::cout << "INTENTANDO CONEXION AL SERVER" << std::endl;
             usleep(5000 * 1000);
-            isConnected = _extraClientSocket->connectToServer();            
-        }while(!isConnected);
+            _isConnectedToServer = _extraClientSocket->connectToServer();            
+        }while(!_isConnectedToServer);
             
         std::cout << "CONEXION AL SERVER CORRECTO" << std::endl;
 
@@ -103,7 +103,17 @@ void TrainerClient::data(Request req) {
 }
 
 void TrainerClient::train(Request req) {
-    _nn->run(train_data, train_labels);
+    if (_isConnectedToServer)  {
+        _nn->run(train_data, train_labels);
+        
+        // { action, datta }
+        Response res = { "train" };
+        send(res, _extraClientSocket);
+        Request req = receive(_extraClientSocket);
+        // servidor responde
+
+        std::cout << req.message << std::endl;
+    }
 }
 
 void TrainerClient::initializeTrainingData(std::vector<std::string>& data) {

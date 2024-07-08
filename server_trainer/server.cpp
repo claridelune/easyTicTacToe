@@ -9,6 +9,7 @@ void TrainerServer::initialize() {
 
 void TrainerServer::configure() { 
     registerVoidEndpoint("join", std::bind(&TrainerServer::join, this, std::placeholders::_1));
+    registerEndpoint("train", std::bind(&TrainerServer::train, this, std::placeholders::_1));
 }
 
 void TrainerServer::join(Request req) {
@@ -16,4 +17,12 @@ void TrainerServer::join(Request req) {
     // res.action = req.action;
 
     // return res;
+}
+
+Response TrainerServer::train(Request req) {
+    Response res;
+    res.action = req.action;
+    res.message = "trainn success";
+    
+    return res;
 }
