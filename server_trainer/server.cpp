@@ -3,7 +3,7 @@
 void TrainerServer::initialize() {
     configure();
     auto& ctx = getOptions();
-    _socket->initialize(ctx.port, ctx.ipAddress);
+    _socket->initialize(ctx.port);
     _socket->configureServer();
  }
 
@@ -13,6 +13,7 @@ void TrainerServer::configure() {
 }
 
 void TrainerServer::join(Request req) {
+    std::cout << "[[[[ ESTO RECIVIENDOO ]]]]" << req.action << std::endl;
     // Response res;
     // res.action = req.action;
 
@@ -23,6 +24,6 @@ Response TrainerServer::train(Request req) {
     Response res;
     res.action = req.action;
     res.message = "trainn success";
-    
+
     return res;
 }

@@ -6,6 +6,7 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include <vector>
 #include <unordered_map>
 
 #include "processor.hpp"
@@ -13,34 +14,54 @@
 #include "../shared/socket.hpp"
 #include "../neural_network/neuralNetwork.hpp"
 
-struct Action {
-    int value;
+enum class Key {
+    SEND,
+    RECEIVE
+};
+
+struct KeyHash {
+    std::size_t operator()(Key k) const {
+        return static_cast<std::size_t>(k);
+    }
 };
 
 class Observer {
     public:
-        virtual void onActionAdded(const std::string& key, const Action& action) = 0;
+        virtual void onActionRequestAdded(Key key, const Request& req) = 0;
+        virtual void onActionResponseAdded(Key key, const Response& res) = 0;
 };
 
 class ObserverMap {
     private:
-        std::unordered_map<std::string, Action> _actionList;
+        std::unordered_map<Key, Request, KeyHash> _requests;
+        std::unordered_map<Key, Response, KeyHash> _responses;
         std::vector<Observer*> _observers;
 
-        void notify(const std::string& key, const Action& action) {
+        void notify(Key key, const Request& req) {
             for (Observer* observer : _observers) {
-                observer->onActionAdded(key, action);
+                observer->onActionRequestAdded(key, req);
             }
         }
+
+        void notify(Key key, const Response& res) {
+            for (Observer* observer : _observers) {
+                observer->onActionResponseAdded(key, res);
+            }
+        }   
 
     public:
         void addObserver(Observer* observer) {
             _observers.push_back(observer);
         }
 
-        void addAction(const std::string& key, const Action& action) {
-            _actionList[key] = action;
-            notify(key, action);
+        void addAction(Key key, const Request& req) {
+            _requests[key] = req;
+            notify(key, req);
+        }
+
+        void addAction(Key key, const Response& res) {
+            _responses[key] = res;
+            notify(key, res);
         }
 };
 
@@ -52,7 +73,8 @@ class TrainerClient : public TrainerProcessor, public Observer {
         Socket* _extraClient;
         std::atomic<bool> _stopExtraClient;
         std::unique_ptr<std::thread> _runningExtraClient;
-        std::unordered_map<std::string, Action> _executionList;
+
+        ObserverMap _actionsMap;
 
         bool _requiredServerInstance;
         bool _requiredServerInstanceFirstTime;
@@ -73,7 +95,6 @@ class TrainerClient : public TrainerProcessor, public Observer {
         void startExtraClient();
         void stopExtraClient();
         void loopExtraClient();
-        void executeExtraClient();
 
         bool requiredServerInstance() { return _requiredServerInstance;}
         bool requiredServerDisposed() { return _requiredServerDisposed; }
@@ -121,8 +142,34 @@ class TrainerClient : public TrainerProcessor, public Observer {
             return req;
         }
 
-        void onActionAdded(const std::string& key, const Action& action) override {
-            std::cout <<"action execute: " << key << std::endl;
+        void onActionRequestAdded(Key key, const Request& req) override {
+            if (_extraClient != nullptr) {
+                std::cout << "[EXTRA CLIENT] receiving data..." << std::endl;
+                receive(_extraClient);
+            }
+        }
+
+        void onActionResponseAdded(Key key, const Response& res) override {
+            if (_extraClient != nullptr) {
+                std::cout << "[EXTRA CLIENT] sending data..." << std::endl;
+
+                // FIX: ESTA COSA ENVIA PERO NO SE PORQUE NO LLEGA AL SERVER
+
+                int sockId = _extraClient->getIdentity();
+                _extraClient->sender(sockId, []() {
+                    return R"(
+                        {
+                            "action": "join",
+                            "credential": {
+                                "name": "asdasdasdsadsa"
+                            }
+                        }
+                    )";
+                });
+                // send(res, _extraClient);
+
+                // END
+            }
         }
 
         void config(Request req);

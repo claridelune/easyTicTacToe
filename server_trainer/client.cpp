@@ -4,8 +4,10 @@
 void TrainerClient::initialize() { 
     configure();
     auto& ctx = getOptions();
-    _socket->initialize(ctx.port, ctx.ipAddress);
+    _socket->initializeExt(ctx.port, ctx.ipAddress);
     _socket->configureClient();
+
+    _actionsMap.addObserver(this);
 
     do {
         bool isConnected = _socket->connectToServer();
@@ -74,7 +76,7 @@ void TrainerClient::stopExtraClient() {
 void TrainerClient::loopExtraClient() {
     auto& opts = getExtraClientOptions();
     _extraClient = new Socket();
-    _extraClient->initialize(opts.port, opts.ipAddress);
+    _extraClient->initializeExt(opts.port, opts.ipAddress);
     _extraClient->configureClient();
 
     do {
@@ -87,7 +89,7 @@ void TrainerClient::loopExtraClient() {
 
     std::cout << "[EXTRA CLIENT] connected to the server correctly." << std::endl;
 
-    // while(!_stopServer) {
+    // while(!_stopExtraClient) {
     //     Request req = _server->receive();
     //     if (req.action.empty()) continue;
 
@@ -99,8 +101,6 @@ void TrainerClient::loopExtraClient() {
     //     _server->send(res);
     // }
 }
-
-void TrainerClient::executeExtraClient() {}
 
 void TrainerClient::configure() { 
     registerVoidEndpoint("config", std::bind(&TrainerClient::config, this, std::placeholders::_1));
@@ -151,7 +151,16 @@ void TrainerClient::config(Request req) {
         
         setExtraClientOptions(extraOpts);
         startExtraClient();
-        executeExtraClient();
+
+        // FIX ME:  remove me
+        usleep(2000 * 1000);
+
+        std::cout << "[EXTRA CLIENT] >> Waiting while the server connects..." << std::endl;
+
+        // end
+
+        // Response res = { "join" };
+        // _actionsMap.addAction(Key::SEND, res);
     }
 }
 

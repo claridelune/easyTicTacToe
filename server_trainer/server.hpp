@@ -36,6 +36,7 @@ class TrainerServer : public TrainerProcessor {
             int sockId = currentSocket->getIdentity();
             Request req;
             currentSocket->consumer(sockId, [&](std::string buffer) {
+                std::cout << "TTTTTTTTTT" << buffer << std::endl;
                 json payload = json::parse(buffer);
                 req.sockId = sockId;
                 req.sockName = payload["credential"]["name"];

@@ -24,12 +24,17 @@ Socket::~Socket() {
     delete _logger;
 }
 
-void Socket::initialize(const size_t port, std::optional<std::string> ip) {
-    in_addr_t ipAddress = ip.has_value() ? inet_addr(ip->c_str()) : INADDR_ANY;
-
+void Socket::initialize(const size_t port) {
     _socketAddr.sin_family = AF_INET;
     _socketAddr.sin_port = htons(port); 
-    _socketAddr.sin_addr.s_addr = ipAddress; 
+    _socketAddr.sin_addr.s_addr = INADDR_ANY; 
+}
+
+
+void Socket::initializeExt(const size_t port, std::string ipAddress) {
+    _socketAddr.sin_family = AF_INET;
+    _socketAddr.sin_port = htons(port); 
+    _socketAddr.sin_addr.s_addr = inet_addr(ipAddress.c_str()); 
 }
 
 int Socket::getIdentity() {
@@ -76,15 +81,17 @@ int Socket::accept() {
     if(clientSocket == SOCKET_ERROR)
         throw std::runtime_error("Error accepting incoming connection.");
 
+    _logger->info(">>>> Aceptando conexion con SocketId <<<<: " + std::to_string(clientSocket));
+
     return clientSocket;
 }
 
 int Socket::consumer(const int socketId, const std::function<void(std::string b)> handler) {
     char bufferSize[PROTOCOL_SIZE];
     int receivedSize = recv(socketId, bufferSize, PROTOCOL_SIZE, 0);
-
-    if (receivedSize == SOCKET_ERROR || receivedSize == 0)
+    if (receivedSize == SOCKET_ERROR || receivedSize == 0) {
         return receivedSize;
+    }
 
     int contentSize = hexToInt(bufferSize);
 
@@ -128,6 +135,8 @@ void Socket::sender(const int socketId, const std::function<const std::string()>
         if (bytesSent == SOCKET_ERROR) {
             break;
         }
+
+        std::cout << "[Send Data]: " << std::to_string(bytesSent) << std::endl;
 
         totalSent += bytesSent;
     }

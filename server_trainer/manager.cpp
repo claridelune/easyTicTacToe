@@ -35,12 +35,14 @@ void ServerManager::loopServer() {
     while(!_stopServer) {
         Request req = _server->receive();
         if (req.action.empty()) continue;
+        std::cout << "[SERVER] receiving data... -> action: " << req.action << std::endl; 
 
         Response res = _server->subscribe(req);
         
         if (res.action == RESPONSE_VOID)
             continue;
 
+        std::cout << "[SERVER] sending data... -> action: " << req.action << std::endl; 
         _server->send(res);
     }
 }
