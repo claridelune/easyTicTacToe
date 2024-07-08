@@ -22,6 +22,7 @@ class Config {
         void set(const ConfigProps options);
         std::vector<ConfigProps>::iterator get(const std::string identity);
         void setLeader(const std::string identity);
+        void remove(const std::string identity);
         std::vector<ConfigProps> all();
 };
 

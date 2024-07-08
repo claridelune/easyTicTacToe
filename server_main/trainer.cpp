@@ -34,8 +34,9 @@ void TrainerServer::keepAlive() {
             auto lastResponseTime = _lastKeepAliveResponse[trainerName];
             auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - lastResponseTime).count();
             if (duration > 20) {
-                std::cout << "Trainer disconnected: " << trainerName << std::endl;
-                _context.connectedTrainers.erase(it++);
+                std::cout << "\nTrainer disconnected: " << trainerName << std::endl;
+                _config->remove(trainerName);
+                it = _context.connectedTrainers.erase(it++);
                 reassignLeader();
             } else {
                 ++it;
@@ -80,8 +81,12 @@ void TrainerServer::sendConfiguration() {
 
 Response TrainerServer::join(Request request) {
     Response response;
-
     _config->set({request.sockName, "0.0.0.0", false});
+
+    if (_context.connectedTrainers.size() == 1) {
+        _config->setLeader(request.sockName);
+    }
+
     _lastKeepAliveResponse[request.sockName] = std::chrono::steady_clock::now();
 
     sendConfiguration();

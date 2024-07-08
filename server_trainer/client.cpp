@@ -31,7 +31,7 @@ void TrainerClient::config(Request req) {
 
     int extraPort = opts.port + 1;
 
-    if (isLeader) {
+    if (false) {
         _requiredServerInstance = true;
         _requiredServerInstanceFirstTime = true;
         _requiredServerDisposed = false;
@@ -54,15 +54,15 @@ void TrainerClient::config(Request req) {
             extraPort
         };
 
-         if (_extraClientSocket == nullptr) {
+         /* if (_extraClientSocket == nullptr) {
             _extraClientSocket = new Socket();
             _extraClientSocket->initialize(extraOpts.port, extraOpts.ipAddress);
             _extraClientSocket->configureClient();
-         }
+         } */
 
-        _isConnectedToServer = false;
+        // _isConnectedToServer = false;
 
-        do {
+        /* do {
             std::cout << "INTENTANDO CONEXION AL SERVER" << std::endl;
             usleep(5000 * 1000);
             _isConnectedToServer = _extraClientSocket->connectToServer();            
@@ -71,7 +71,7 @@ void TrainerClient::config(Request req) {
         std::cout << "CONEXION AL SERVER CORRECTO" << std::endl;
 
         Response res = { "join" };
-        send(res, _extraClientSocket);
+        send(res, _extraClientSocket); */
     }
 }
 

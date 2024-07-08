@@ -177,7 +177,6 @@ UDPTalker::UDPTalker(int timeout, const std::string &hostIP, const uint16_t host
 
 std::string UDPTalker::sendNReceive(const std::string &message)
 {
-    std::cout << "asadlfkjslakdf" << std::endl;
     keep = true;
     std::thread th(&UDPTalker::request, this, message);
     th.detach();
@@ -188,7 +187,6 @@ std::string UDPTalker::sendNReceive(const std::string &message)
 
         int numbytes;
 
-        std::cout << "antes" << std::endl;
         if ((numbytes = recvfrom(socketFD, buff, maxbuff, 0, nullptr, nullptr)) == -1) {
             perror("recvfrom");
             exit(213);

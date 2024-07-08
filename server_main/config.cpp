@@ -28,6 +28,13 @@ void Config::setLeader(const std::string identity) {
     }
 }
 
+void Config::remove(const std::string identity) {
+    auto record = get(identity);
+    if (record != _records.end()) {
+        _records.erase(record);
+    }
+}
+
 std::vector<ConfigProps> Config::all() {
     return _records;
 }

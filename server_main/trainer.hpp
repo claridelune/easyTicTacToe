@@ -10,7 +10,7 @@
 
 class TrainerServer : public Server { 
     private:
-        Config* _config;
+        Config* _config = new Config;
 
         Context& _context;
 
@@ -26,11 +26,10 @@ class TrainerServer : public Server {
         void sendConfiguration();
 
     public:
-        TrainerServer(Context& context) : _context(context) { 
+        TrainerServer(Context& context) : _context(context) {
             initialize();
-            _config = new Config();
             _isRunning = true;
-        }
+}
 
         ~TrainerServer() {
             delete _config;
