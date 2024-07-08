@@ -53,11 +53,6 @@ void ServerManager::loop() {
         if (_client->receiveData) {
         }
 
-        if (res.action == RESPONSE_VOID)
-            continue;
-
-        _client->send(res);
-
         if (
             _client->requiredServerInstance() && 
             _client->requiredServerInstanceFirstTime() && 
@@ -74,6 +69,11 @@ void ServerManager::loop() {
             stopServer();
             _client->setRequiredDisposed(false);
         }
+
+        if (res.action == RESPONSE_VOID)
+            continue;
+
+        _client->send(res);
     }
 }
 

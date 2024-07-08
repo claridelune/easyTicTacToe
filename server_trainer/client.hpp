@@ -36,9 +36,10 @@ class TrainerClient : public TrainerProcessor {
         void configure() override;
 
         void config(Request req);
+        void join(Request req);
+        void data(Request req);
         Response predict(Request req);
         Response keepAlive(Request req);
-        Response data(Request req);
 };
 
 #endif

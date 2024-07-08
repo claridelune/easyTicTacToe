@@ -10,9 +10,10 @@ void TrainerClient::initialize() {
 
 void TrainerClient::configure() { 
     registerVoidEndpoint("config", std::bind(&TrainerClient::config, this, std::placeholders::_1));
+    registerVoidEndpoint("join", std::bind(&TrainerClient::join, this, std::placeholders::_1));
+    registerVoidEndpoint("data", std::bind(&TrainerClient::data, this, std::placeholders::_1));
     registerEndpoint("predict", std::bind(&TrainerClient::predict, this, std::placeholders::_1));
     registerEndpoint("keepAlive", std::bind(&TrainerClient::keepAlive, this, std::placeholders::_1));
-    registerEndpoint("data", std::bind(&TrainerClient::data, this, std::placeholders::_1));
 }
 
 void TrainerClient::config(Request req) {
@@ -26,25 +27,32 @@ void TrainerClient::config(Request req) {
         }
     }
 
-    if (isLeader) {
-        _requiredServerInstance = true;
-        _requiredServerInstanceFirstTime = true;
-        _requiredDisposed = false;
+    // if (isLeader) {
+    //     _requiredServerInstance = true;
+    //     _requiredServerInstanceFirstTime = true;
+    //     _requiredDisposed = false;
 
-        int serverPort = opts.port + 1;
+    //     int serverPort = opts.port + 1;
 
-        ProcessorOpts extraOpts {
-            opts.uid,
-            opts.ipAddress,
-            serverPort
-        };
+    //     ProcessorOpts extraOpts {
+    //         opts.uid,
+    //         opts.ipAddress,
+    //         serverPort
+    //     };
 
-        setExtraOptions(extraOpts);
-    } else {
-        _requiredServerInstance = false;        
-        _requiredServerInstanceFirstTime = false;
-        _requiredDisposed = true;
-    }
+    //     setExtraOptions(extraOpts);
+    // } else {
+    //     _requiredServerInstance = false;        
+    //     _requiredServerInstanceFirstTime = false;
+    //     _requiredDisposed = true;
+    // }
+}
+
+void TrainerClient::join(Request req) {
+    // Response res;
+    // res.action = req.action;
+
+    // return res;
 }
 
 Response TrainerClient::predict(Request req) {
@@ -60,6 +68,6 @@ Response TrainerClient::keepAlive(Request req) {
     return res;
 }
 
-Response TrainerClient::data(Request req) {
+void TrainerClient::data(Request req) {
     receiveData = true;
 }

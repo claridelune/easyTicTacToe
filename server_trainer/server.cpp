@@ -7,4 +7,13 @@ void TrainerServer::initialize() {
     _socket->configureServer();
  }
 
-void TrainerServer::configure() { }
+void TrainerServer::configure() { 
+    registerEndpoint("join", std::bind(&TrainerServer::join, this, std::placeholders::_1));
+}
+
+Response TrainerServer::join(Request req) {
+    Response res;
+    res.action = req.action;
+
+    return res;
+}

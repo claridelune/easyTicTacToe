@@ -11,6 +11,8 @@ class TrainerServer : public TrainerProcessor {
 
         void initialize() override;
         void configure() override;
+
+        Response join(Request req);
 };
 
 #endif
