@@ -12,6 +12,7 @@ void TrainerClient::configure() {
     registerVoidEndpoint("config", std::bind(&TrainerClient::config, this, std::placeholders::_1));
     registerEndpoint("predict", std::bind(&TrainerClient::predict, this, std::placeholders::_1));
     registerEndpoint("keepAlive", std::bind(&TrainerClient::keepAlive, this, std::placeholders::_1));
+    registerEndpoint("data", std::bind(&TrainerClient::data, this, std::placeholders::_1));
 }
 
 void TrainerClient::config(Request req) {
@@ -25,7 +26,7 @@ void TrainerClient::config(Request req) {
         }
     }
 
-    if (true) {
+    if (isLeader) {
         _requiredServerInstance = true;
         _requiredServerInstanceFirstTime = true;
         _requiredDisposed = false;
@@ -57,4 +58,8 @@ Response TrainerClient::keepAlive(Request req) {
     Response res;
     res.action = req.action;
     return res;
+}
+
+Response TrainerClient::data(Request req) {
+    receiveData = true;
 }

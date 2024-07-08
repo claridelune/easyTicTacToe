@@ -14,8 +14,11 @@ class TrainerClient : public TrainerProcessor {
         bool _requiredServerInstanceFirstTime;
 
     public:
+        bool receiveData;
+
         TrainerClient(Socket* socket, ProcessorOpts& opts): TrainerProcessor(socket) {
             setOptions(opts);
+            receiveData = false;
         }  
 
         ProcessorOpts& getExtraOptions() { return _extraOptions; }
@@ -35,6 +38,7 @@ class TrainerClient : public TrainerProcessor {
         void config(Request req);
         Response predict(Request req);
         Response keepAlive(Request req);
+        Response data(Request req);
 };
 
 #endif

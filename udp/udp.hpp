@@ -1,3 +1,6 @@
+#ifndef UDP_H
+#define UDP_H
+
 #include <functional>
 #include <thread>
 #include <stdio.h>
@@ -63,3 +66,5 @@ void sendString(const int socket, const std::string& message, sockaddr_storage a
 char getSum(const std::string& message);
 
 bool checkSum(const std::string& message);
+
+#endif

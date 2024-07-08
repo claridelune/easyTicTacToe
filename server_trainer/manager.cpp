@@ -1,6 +1,8 @@
 #include "manager.hpp"
 
 #include <iostream>
+int currSeq = 0;
+std::vector<std::string> data;
 
 void ServerManager::startServer() {
     if (_runningServer == nullptr || !_runningServer->joinable()) { 
@@ -48,6 +50,9 @@ void ServerManager::loop() {
         Request req = _client->receive();
         Response res = _client->subscribe(req);
 
+        if (_client->receiveData) {
+        }
+
         if (res.action == RESPONSE_VOID)
             continue;
 
@@ -72,7 +77,40 @@ void ServerManager::loop() {
     }
 }
 
+void ServerManager::receiveData()
+{
+    for (; true; currSeq++)
+    {
+        std::string message;
+        message.push_back('r');
+        message += intToBinary(currSeq);
+
+        int cs = getSum(message);
+        message.push_back(cs);
+
+        auto resp = talker->sendNReceive(message);
+
+        if (resp[0] == 'f')
+            break;
+        
+        data.push_back(resp.substr(5, 10));
+    }
+}
+
 void ServerManager::run(std::function<void()> handler) {
     handler();
     loop();
 }
+
+bool evaluateDatum(const std::string& datum)
+{
+    if (!checkSum(datum) || (datum[0] != 'd' && datum[0] != 'f'))
+        return false;
+
+    if (datum[0] == 'f')
+        return true;
+
+    int seq = binaryToInt(datum.substr(1, 4));
+    return currSeq == seq;
+}
+

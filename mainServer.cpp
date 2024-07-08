@@ -6,7 +6,7 @@
 #include "shared/logger.hpp"
 #include "shared/utils.hpp"
 
-#define UDP_PORT "3490"
+#define UDP_PORT "7490"
 #define TCP_PORT 4490
 #define DATA_PATH "./data/data.txt"
 

@@ -8,8 +8,17 @@
 
 #include <nlohmann/json.hpp>
 
+#include "../neural_network/dataHandler.hpp"
+#include "../neural_network/neuralNetwork.hpp"
+
+#define IP "127.0.0.1"
+#define UDP_PORT 7490
+
 #include "client.hpp"
 #include "server.hpp"
+#include "../udp/udp.hpp"
+
+bool evaluateDatum(const std::string& datum);
 
 class ServerManager {
     private:
@@ -18,17 +27,20 @@ class ServerManager {
 
         TrainerClient* _client;
         TrainerServer* _server;
+        UDPTalker * talker;
 
         void startServer();
         void stopServer();
         void loopServer();
         void loop();
+        void receiveData();
 
     public:
-        ServerManager(TrainerClient* client, TrainerServer* server) :
+        ServerManager(TrainerClient* client, TrainerServer* server, UDPTalker* udp) :
         _client(client), 
         _server(server), 
-        _stopServer(false) , 
+        talker(udp),
+        _stopServer(false), 
         _runningServer(nullptr) { }
 
         ~ServerManager() {
