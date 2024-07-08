@@ -34,6 +34,7 @@ void ServerManager::loopServer() {
 
     while(!_stopServer) {
         int sockId = _server->accept();
+        _server->addClient(sockId);
         Request req = _server->receive(sockId);
         if (req.action.empty()) continue;
         std::cout << "[SERVER] receiving data... -> action: " << req.action << std::endl; 

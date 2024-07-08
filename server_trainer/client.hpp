@@ -150,30 +150,11 @@ class TrainerClient : public TrainerProcessor, public Observer {
         }
 
         void onActionResponseAdded(Key key, const Response& res) override {
+            std::cout << "[EXTRA CLIENT] ::: INICIANDO SENDER ANTES DE ENVIAR" << std::endl;
             if (_extraClient != nullptr) {
                 std::cout << "[EXTRA CLIENT] sending data..." << std::endl;
-
-                // FIX: ESTA COSA ENVIA PERO NO SE PORQUE NO LLEGA AL SERVER
-
-                int sockId = _extraClient->getIdentity();
-                
-                for (int i = 0; i< 10; i++) {
-                    _extraClient->sender(sockId, []() {
-                    return R"(
-                        {
-                            "action": "join",
-                            "credential": {
-                                "name": "asdasdasdsadsa"
-                            }
-                        }
-                    )";
-                });
-                }
-
-             
-                // send(res, _extraClient);
-
-                // END
+                send(res, 0, _extraClient);
+                receive(0, _extraClient);
             }
         }
 
@@ -181,6 +162,7 @@ class TrainerClient : public TrainerProcessor, public Observer {
         void join(Request req);
         void data(Request req);
         void train(Request req);
+        void receiveWeight(Request req);
         Response predict(Request req);
         Response keepAlive(Request req);
 

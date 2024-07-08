@@ -26,31 +26,6 @@ void TrainerClient::startExtraClient() {
         _stopExtraClient = false;
         _runningExtraClient = std::make_unique<std::thread>(&TrainerClient::loopExtraClient, this);
     }
-
-            // ProcessorOpts extraOpts {
-        //     opts.uid,
-        //     opts.ipAddress,
-        //     extraPort
-        // };
-
-        //  if (_extraClientSocket == nullptr) {
-        //     _extraClientSocket = new Socket();
-        //     _extraClientSocket->initialize(extraOpts.port, extraOpts.ipAddress);
-        //     _extraClientSocket->configureClient();
-        //  }
-
-        // _isConnectedToServer = false;
-
-        // do {
-        //     std::cout << "INTENTANDO CONEXION AL SERVER" << std::endl;
-        //     usleep(5000 * 1000);
-        //     _isConnectedToServer = _extraClientSocket->connectToServer();            
-        // }while(!_isConnectedToServer);
-            
-        // std::cout << "CONEXION AL SERVER CORRECTO" << std::endl;
-
-        // Response res = { "join" };
-        // send(res, _extraClientSocket);
 }
 
 void TrainerClient::stopExtraClient() {
@@ -88,18 +63,6 @@ void TrainerClient::loopExtraClient() {
     } while(true);
 
     std::cout << "[EXTRA CLIENT] connected to the server correctly." << std::endl;
-
-    // while(!_stopExtraClient) {
-    //     Request req = _server->receive();
-    //     if (req.action.empty()) continue;
-
-    //     Response res = _server->subscribe(req);
-        
-    //     if (res.action == RESPONSE_VOID)
-    //         continue;
-
-    //     _server->send(res);
-    // }
 }
 
 void TrainerClient::configure() { 
@@ -108,6 +71,7 @@ void TrainerClient::configure() {
     registerVoidEndpoint("data", std::bind(&TrainerClient::data, this, std::placeholders::_1));
     registerVoidEndpoint("start", std::bind(&TrainerClient::train, this, std::placeholders::_1));
     registerVoidEndpoint("next", std::bind(&TrainerClient::train, this, std::placeholders::_1));
+    registerVoidEndpoint("receive-weight", std::bind(&TrainerClient::train, this, std::placeholders::_1));
     registerEndpoint("predict", std::bind(&TrainerClient::predict, this, std::placeholders::_1));
     registerEndpoint("keepAlive", std::bind(&TrainerClient::keepAlive, this, std::placeholders::_1));
 }
@@ -210,18 +174,23 @@ void TrainerClient::data(Request req) {
     _receiveData = true;
 }
 
-void TrainerClient::train(Request req) {
-    // if (_isConnectedToServer)  {
-    //     _nn->run(train_data, train_labels);
-        
-    //     // { action, datta }
-    //     Response res = { "train" };
-    //     send(res, _extraClientSocket);
-    //     Request req = receive(_extraClientSocket);
-    //     // servidor responde
+void TrainerClient::receiveWeight(Request req) {
+    std::cout << "::::::: START RECEIVE WEIGHT ::::::::" << std::endl;
 
-    //     std::cout << req.message << std::endl;
-    // }
+        // _nn->run(train_data, train_labels);
+        
+        // esperar a todos 
+        // luego enviar a todos los trainer clientes, pesos actualizados.
+    std::cout << "::::::: END RECEIVE WEIGHT ::::::::" << std::endl;
+}
+
+void TrainerClient::train(Request req) {
+    std::cout << "::::::: START NEW EPOC ::::::::" << std::endl;
+
+    Response res = { "weight" };
+    _actionsMap.addAction(Key::SEND, res);
+
+    std::cout << "::::::: END NEW EPOC ::::::::" << std::endl;
 }
 
 void TrainerClient::initializeTrainingData(std::vector<std::string>& data) {

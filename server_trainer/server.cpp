@@ -9,21 +9,28 @@ void TrainerServer::initialize() {
 
 void TrainerServer::configure() { 
     registerVoidEndpoint("join", std::bind(&TrainerServer::join, this, std::placeholders::_1));
-    registerEndpoint("train", std::bind(&TrainerServer::train, this, std::placeholders::_1));
+    registerVoidEndpoint("weight", std::bind(&TrainerServer::weight, this, std::placeholders::_1));
 }
 
 void TrainerServer::join(Request req) {
-    std::cout << "[[[[ ESTO RECIVIENDOO ]]]]" << req.action << std::endl;
+    std::cout << "::::::: START JOIN ::::::::" << req.action << std::endl;
     // Response res;
     // res.action = req.action;
 
     // return res;
+    std::cout << "::::::: END JOIN ::::::::" << req.action << std::endl;
 }
 
-Response TrainerServer::train(Request req) {
-    Response res;
-    res.action = req.action;
-    res.message = "trainn success";
+void TrainerServer::weight(Request req) {
+    std::cout << "::::::: START PROCESS WEIGHT ::::::::" << std::endl;
 
-    return res;
+    Response res;
+    res.action = "receive-weight";
+    res.message = "Se estan enviado mis pesos!...";
+
+    for(int clientSockId : _clientConnecteds) {
+        send(res, clientSockId);
+    }
+
+    std::cout << "::::::: END PROCESS WEIGHT ::::::::" << std::endl;
 }
