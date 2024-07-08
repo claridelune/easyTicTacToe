@@ -33,7 +33,8 @@ void ServerManager::loopServer() {
     _server->initialize();
 
     while(!_stopServer) {
-        Request req = _server->receive();
+        int sockId = _server->accept();
+        Request req = _server->receive(sockId);
         if (req.action.empty()) continue;
         std::cout << "[SERVER] receiving data... -> action: " << req.action << std::endl; 
 
@@ -43,7 +44,7 @@ void ServerManager::loopServer() {
             continue;
 
         std::cout << "[SERVER] sending data... -> action: " << req.action << std::endl; 
-        _server->send(res);
+        _server->send(res, sockId);
     }
 }
 
@@ -52,10 +53,10 @@ void ServerManager::loop() {
 
     Response frsReq { "join" };
 
-    _client->send(frsReq);
+    _client->send(frsReq, 0);
 
     while(true) {
-        Request req = _client->receive();
+        Request req = _client->receive(0);
         if (req.action.empty()) continue;
 
         Response res = _client->subscribe(req);
@@ -85,7 +86,7 @@ void ServerManager::loop() {
         if (res.action == RESPONSE_VOID)
             continue;
 
-        _client->send(res);
+        _client->send(res, 0);
     }
 }
 

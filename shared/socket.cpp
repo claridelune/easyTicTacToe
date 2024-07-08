@@ -77,11 +77,11 @@ bool Socket::connectToServer() {
 }
 
 int Socket::accept() {
+    _logger->info(">>>> Antes del acepte!!!! <<<<: ");
     int clientSocket = socketAccept(_socketId, nullptr, nullptr);
+    _logger->info(">>>> Aceptando conexion con SocketId <<<<: " + std::to_string(clientSocket));
     if(clientSocket == SOCKET_ERROR)
         throw std::runtime_error("Error accepting incoming connection.");
-
-    _logger->info(">>>> Aceptando conexion con SocketId <<<<: " + std::to_string(clientSocket));
 
     return clientSocket;
 }

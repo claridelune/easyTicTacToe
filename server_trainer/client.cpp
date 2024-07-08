@@ -153,14 +153,14 @@ void TrainerClient::config(Request req) {
         startExtraClient();
 
         // FIX ME:  remove me
-        usleep(2000 * 1000);
+        usleep(5000 * 1000);
 
         std::cout << "[EXTRA CLIENT] >> Waiting while the server connects..." << std::endl;
 
         // end
 
-        // Response res = { "join" };
-        // _actionsMap.addAction(Key::SEND, res);
+        Response res = { "join" };
+        _actionsMap.addAction(Key::SEND, res);
     }
 }
 

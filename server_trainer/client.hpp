@@ -109,7 +109,7 @@ class TrainerClient : public TrainerProcessor, public Observer {
         void initialize() override;
         void configure() override;
 
-        void send(Response res, Socket* socket = nullptr) override {
+        void send(Response res, int x, Socket* socket = nullptr) override {
             Socket* currentSocket = (socket == nullptr) ?  _socket : socket;
 
             int sockId = currentSocket->getIdentity();
@@ -128,7 +128,7 @@ class TrainerClient : public TrainerProcessor, public Observer {
             });
         }
 
-        Request receive(Socket* socket = nullptr) override {
+        Request receive(int x, Socket* socket = nullptr) override {
             Socket* currentSocket = (socket == nullptr) ?  _socket : socket;
 
             int sockId = currentSocket->getIdentity();
@@ -145,7 +145,7 @@ class TrainerClient : public TrainerProcessor, public Observer {
         void onActionRequestAdded(Key key, const Request& req) override {
             if (_extraClient != nullptr) {
                 std::cout << "[EXTRA CLIENT] receiving data..." << std::endl;
-                receive(_extraClient);
+                // receive(0, _extraClient);
             }
         }
 
@@ -156,7 +156,9 @@ class TrainerClient : public TrainerProcessor, public Observer {
                 // FIX: ESTA COSA ENVIA PERO NO SE PORQUE NO LLEGA AL SERVER
 
                 int sockId = _extraClient->getIdentity();
-                _extraClient->sender(sockId, []() {
+                
+                for (int i = 0; i< 10; i++) {
+                    _extraClient->sender(sockId, []() {
                     return R"(
                         {
                             "action": "join",
@@ -166,6 +168,9 @@ class TrainerClient : public TrainerProcessor, public Observer {
                         }
                     )";
                 });
+                }
+
+             
                 // send(res, _extraClient);
 
                 // END

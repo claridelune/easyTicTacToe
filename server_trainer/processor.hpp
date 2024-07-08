@@ -80,8 +80,8 @@ class TrainerProcessor {
         virtual void initialize() = 0;
         virtual void configure() = 0;
 
-        virtual void send(Response response, Socket* socket = nullptr) = 0;
-        virtual Request receive(Socket* socket = nullptr) = 0;
+        virtual void send(Response response, int sockId,  Socket* socket = nullptr) = 0;
+        virtual Request receive(int sockId, Socket* socket = nullptr) = 0;
 
         int getSockId() { return _socket->getIdentity(); }
         void setSockId(int sockId) { _socket->setIdentity(sockId); }

@@ -14,10 +14,13 @@ class TrainerServer : public TrainerProcessor {
         void initialize() override;
         void configure() override;
 
-        void send(Response res, Socket* socket = nullptr) override {
+        int accept() {
+            return _socket->accept();
+        }
+
+        void send(Response res, int sockId, Socket* socket = nullptr) override {
             Socket* currentSocket = (socket == nullptr) ?  _socket : socket;
 
-            int sockId = currentSocket->getIdentity();
             currentSocket->sender(sockId, [&]() -> std::string {
                 json jsonMeta = {
                     {"action", res.action},
@@ -30,10 +33,9 @@ class TrainerServer : public TrainerProcessor {
             });
         }
 
-        Request receive(Socket* socket = nullptr) override {
+        Request receive(int sockId, Socket* socket = nullptr) override {
             Socket* currentSocket = (socket == nullptr) ?  _socket : socket;
 
-            int sockId = currentSocket->getIdentity();
             Request req;
             currentSocket->consumer(sockId, [&](std::string buffer) {
                 std::cout << "TTTTTTTTTT" << buffer << std::endl;
