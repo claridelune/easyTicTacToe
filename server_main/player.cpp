@@ -10,6 +10,7 @@ Response PlayerServer::predict(Request request) {
 
     response.action = request.action;
     response.message = "Mi prediccion nunca falla >:V";
+    response.data = {{"move", 4}};
 
     return response;
 }
