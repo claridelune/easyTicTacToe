@@ -6,8 +6,101 @@ void TrainerClient::initialize() {
     auto& ctx = getOptions();
     _socket->initialize(ctx.port, ctx.ipAddress);
     _socket->configureClient();
-    _socket->connectToServer();
+
+    do {
+        bool isConnected = _socket->connectToServer();
+        if (isConnected) break;
+    
+        std::cout << "[CLIENT] >> trying to connect to the server..." << std::endl;
+        usleep(5000 * 1000);
+    } while(true);
+
+    std::cout << "[CLIENT] >> connected to the server correctly." << std::endl;
 }
+
+void TrainerClient::startExtraClient() {
+    if (_runningExtraClient == nullptr || !_runningExtraClient->joinable()) {
+        std::cout << "[EXTRA CLIENT]  Starting client..." << std::endl;
+        _stopExtraClient = false;
+        _runningExtraClient = std::make_unique<std::thread>(&TrainerClient::loopExtraClient, this);
+    }
+
+            // ProcessorOpts extraOpts {
+        //     opts.uid,
+        //     opts.ipAddress,
+        //     extraPort
+        // };
+
+        //  if (_extraClientSocket == nullptr) {
+        //     _extraClientSocket = new Socket();
+        //     _extraClientSocket->initialize(extraOpts.port, extraOpts.ipAddress);
+        //     _extraClientSocket->configureClient();
+        //  }
+
+        // _isConnectedToServer = false;
+
+        // do {
+        //     std::cout << "INTENTANDO CONEXION AL SERVER" << std::endl;
+        //     usleep(5000 * 1000);
+        //     _isConnectedToServer = _extraClientSocket->connectToServer();            
+        // }while(!_isConnectedToServer);
+            
+        // std::cout << "CONEXION AL SERVER CORRECTO" << std::endl;
+
+        // Response res = { "join" };
+        // send(res, _extraClientSocket);
+}
+
+void TrainerClient::stopExtraClient() {
+    if (_runningExtraClient != nullptr && _runningExtraClient->joinable()) {
+        std::cout << "[EXTRA CLIENT]  Shutting down client...." << std::endl;
+        _stopExtraClient = true;
+        _runningExtraClient->join();
+        _runningExtraClient.reset();
+
+        if (_extraClient == nullptr)
+            return;
+
+        int clientSockId = _extraClient->getIdentity();
+        if (clientSockId != -1) {
+            _extraClient->close(clientSockId);
+            _extraClient->setIdentity(-1);
+        }
+        
+        delete _extraClient;
+    }
+}
+
+void TrainerClient::loopExtraClient() {
+    auto& opts = getExtraClientOptions();
+    _extraClient = new Socket();
+    _extraClient->initialize(opts.port, opts.ipAddress);
+    _extraClient->configureClient();
+
+    do {
+        bool isConnected = _extraClient->connectToServer();
+        if (isConnected) break;
+    
+        std::cout << "[EXTRA CLIENT] >> trying to connect to the server..." << std::endl;
+        usleep(5000 * 1000);
+    } while(true);
+
+    std::cout << "[EXTRA CLIENT] connected to the server correctly." << std::endl;
+
+    // while(!_stopServer) {
+    //     Request req = _server->receive();
+    //     if (req.action.empty()) continue;
+
+    //     Response res = _server->subscribe(req);
+        
+    //     if (res.action == RESPONSE_VOID)
+    //         continue;
+
+    //     _server->send(res);
+    // }
+}
+
+void TrainerClient::executeExtraClient() {}
 
 void TrainerClient::configure() { 
     registerVoidEndpoint("config", std::bind(&TrainerClient::config, this, std::placeholders::_1));
@@ -32,7 +125,7 @@ void TrainerClient::config(Request req) {
 
     int extraPort = opts.port + 1;
 
-    if (false) {
+    if (isLeader) {
         _requiredServerInstance = true;
         _requiredServerInstanceFirstTime = true;
         _requiredServerDisposed = false;
@@ -44,6 +137,7 @@ void TrainerClient::config(Request req) {
         };
 
         setExtraServerOptions(extraOpts);
+        stopExtraClient();
     } else {
         _requiredServerInstance = false;        
         _requiredServerInstanceFirstTime = false;
@@ -54,25 +148,10 @@ void TrainerClient::config(Request req) {
             opts.ipAddress,
             extraPort
         };
-
-         /* if (_extraClientSocket == nullptr) {
-            _extraClientSocket = new Socket();
-            _extraClientSocket->initialize(extraOpts.port, extraOpts.ipAddress);
-            _extraClientSocket->configureClient();
-         } */
-
-        // _isConnectedToServer = false;
-
-        /* do {
-            std::cout << "INTENTANDO CONEXION AL SERVER" << std::endl;
-            usleep(5000 * 1000);
-            _isConnectedToServer = _extraClientSocket->connectToServer();            
-        }while(!_isConnectedToServer);
-            
-        std::cout << "CONEXION AL SERVER CORRECTO" << std::endl;
-
-        Response res = { "join" };
-        send(res, _extraClientSocket); */
+        
+        setExtraClientOptions(extraOpts);
+        startExtraClient();
+        executeExtraClient();
     }
 }
 
@@ -123,17 +202,17 @@ void TrainerClient::data(Request req) {
 }
 
 void TrainerClient::train(Request req) {
-    if (_isConnectedToServer)  {
-        _nn->run(train_data, train_labels);
+    // if (_isConnectedToServer)  {
+    //     _nn->run(train_data, train_labels);
         
-        // { action, datta }
-        Response res = { "train" };
-        send(res, _extraClientSocket);
-        Request req = receive(_extraClientSocket);
-        // servidor responde
+    //     // { action, datta }
+    //     Response res = { "train" };
+    //     send(res, _extraClientSocket);
+    //     Request req = receive(_extraClientSocket);
+    //     // servidor responde
 
-        std::cout << req.message << std::endl;
-    }
+    //     std::cout << req.message << std::endl;
+    // }
 }
 
 void TrainerClient::initializeTrainingData(std::vector<std::string>& data) {

@@ -3,33 +3,77 @@
 
 #include <stdexcept>
 #include <unistd.h>
+#include <thread>
+#include <atomic>
+#include <chrono>
+#include <unordered_map>
 
 #include "processor.hpp"
 
 #include "../shared/socket.hpp"
 #include "../neural_network/neuralNetwork.hpp"
 
-class TrainerClient : public TrainerProcessor {
-    private:
-        Socket* _extraClientSocket;
+struct Action {
+    int value;
+};
 
+class Observer {
+    public:
+        virtual void onActionAdded(const std::string& key, const Action& action) = 0;
+};
+
+class ObserverMap {
+    private:
+        std::unordered_map<std::string, Action> _actionList;
+        std::vector<Observer*> _observers;
+
+        void notify(const std::string& key, const Action& action) {
+            for (Observer* observer : _observers) {
+                observer->onActionAdded(key, action);
+            }
+        }
+
+    public:
+        void addObserver(Observer* observer) {
+            _observers.push_back(observer);
+        }
+
+        void addAction(const std::string& key, const Action& action) {
+            _actionList[key] = action;
+            notify(key, action);
+        }
+};
+
+class TrainerClient : public TrainerProcessor, public Observer {
+    private:
         ProcessorOpts _extraServerOptions;
+        ProcessorOpts _extraClientOptions;
+
+        Socket* _extraClient;
+        std::atomic<bool> _stopExtraClient;
+        std::unique_ptr<std::thread> _runningExtraClient;
+        std::unordered_map<std::string, Action> _executionList;
 
         bool _requiredServerInstance;
         bool _requiredServerInstanceFirstTime;
         bool _requiredServerDisposed;
 
-        bool _isConnectedToServer;
         bool _receiveData = false;
 
-
     public:
-        TrainerClient(Socket* socket, NeuralNetwork *nn, ProcessorOpts& opts): TrainerProcessor(socket, nn), _extraClientSocket(nullptr) {
+        TrainerClient(Socket* socket, NeuralNetwork *nn, ProcessorOpts& opts): TrainerProcessor(socket, nn), _extraClient(nullptr) {
             setOptions(opts);
         }            
 
         ProcessorOpts& getExtraServerOptions() { return _extraServerOptions; }
         void setExtraServerOptions(ProcessorOpts opts) { _extraServerOptions = opts; }
+        ProcessorOpts& getExtraClientOptions() { return _extraClientOptions; }
+        void setExtraClientOptions(ProcessorOpts opts) { _extraClientOptions = opts; }   
+
+        void startExtraClient();
+        void stopExtraClient();
+        void loopExtraClient();
+        void executeExtraClient();
 
         bool requiredServerInstance() { return _requiredServerInstance;}
         bool requiredServerDisposed() { return _requiredServerDisposed; }
@@ -75,6 +119,10 @@ class TrainerClient : public TrainerProcessor {
             });
 
             return req;
+        }
+
+        void onActionAdded(const std::string& key, const Action& action) override {
+            std::cout <<"action execute: " << key << std::endl;
         }
 
         void config(Request req);

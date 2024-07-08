@@ -51,7 +51,14 @@ class Client {
             logger->info("Creating socket");
             _socketClient = new Socket(ip, port);
             _socketClient->configureClient();
-            _socketClient->connectToServer();
+
+            do {
+                bool isConnected = _socketClient->connectToServer();
+                if (isConnected) break;
+                logger->info("trying to connect to the server...");
+                usleep(5000 * 1000);
+            } while(true);
+            logger->info("connected to the server correctly.");
         }
 
         virtual ~Client() {

@@ -6,6 +6,7 @@ std::vector<std::string> data;
 
 void ServerManager::startServer() {
     if (_runningServer == nullptr || !_runningServer->joinable()) { 
+        std::cout << "[SERVER]  Starting server..." << std::endl;
         _stopServer = false;
         _runningServer = std::make_unique<std::thread>(&ServerManager::loopServer, this);
     }
@@ -13,15 +14,16 @@ void ServerManager::startServer() {
 
 void ServerManager::stopServer() {
     if (_runningServer != nullptr && _runningServer->joinable()) {
+        std::cout << "[SERVER]  Shutting down server...." << std::endl;
         _stopServer = true;
         _runningServer->join();
         _runningServer.reset();
-    }
 
-    int serverSockId = _server->getSockId();
-    if (serverSockId != -1) {
-        _server->closeSock(serverSockId);
-        _server->setSockId(-1);
+        int serverSockId = _server->getSockId();
+        if (serverSockId != -1) {
+            _server->closeSock(serverSockId);
+            _server->setSockId(-1);
+        }
     }
 }
 
@@ -68,14 +70,12 @@ void ServerManager::loop() {
             _client->requiredServerInstanceFirstTime() && 
             !_client->requiredServerDisposed()
         ) {
-            std::cout << "START SERVER" << std::endl;
             startServer();
             _client->setRequiredServerInstanceFirstTime(false);
             _client->setRequiredServerInstance(false);
         }
 
         if (_client->requiredServerDisposed()) {
-            std::cout << "STOP SERVER" << std::endl;
             stopServer();
             _client->setRequiredServerDisposed(false);
         }
